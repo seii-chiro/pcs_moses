@@ -10,6 +10,7 @@ const VoterProfile = () => {
         const status = statuses[Math.floor(Math.random() * statuses.length)];
 
         return ({
+            key: user.id,
             name: `${user?.surname}, ${user?.first_name} ${user?.middle_name}`,
             reason: "No Reason",
             dateAssigned: "2025-04-17",

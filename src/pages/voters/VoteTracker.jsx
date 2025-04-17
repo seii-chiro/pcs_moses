@@ -29,7 +29,7 @@ const VoteTracker = () => {
             case 'finish':
                 return 'green';
             case 'process':
-                return 'blue';
+                return 'gray';
             case 'wait':
                 return 'gray';
             case 'error':
@@ -45,7 +45,7 @@ const VoteTracker = () => {
             case 'finish':
                 return 'Success';
             case 'process':
-                return 'Processing';
+                return 'Pending';
             case 'wait':
                 return 'Pending';
             case 'error':

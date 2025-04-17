@@ -6,16 +6,26 @@ import { CandidateCard } from './components/SelectedCandidates';
 import { generatePdfFromSelectedCandidates } from './utils/generatePDF';
 import { FaCircleCheck } from 'react-icons/fa6';
 import { FaRegCheckCircle } from 'react-icons/fa';
+import { useNavigate } from 'react-router';
+import useVotingStateStore from '../../stores/useVotingStateStore';
 
 const ReviewPage = () => {
     const selectedCandidates = useCandidateStore(state => state.selectedCandidates);
+    const { setPdfBallotCreatedInServer, setBallotCasted } = useVotingStateStore();
     const [pdfUrl, setPdfUrl] = useState(null);
+    const navigate = useNavigate();
+
+    const handleCastVote = () => {
+        setBallotCasted(true)
+        navigate("/voter/vote/success")
+    }
 
     useEffect(() => {
         const fetchPdf = async () => {
             if (Object.keys(selectedCandidates).length > 0) {
                 const url = await generatePdfFromSelectedCandidates();
                 setPdfUrl(url);
+                setPdfBallotCreatedInServer(true)
             }
         };
 
@@ -76,8 +86,10 @@ const ReviewPage = () => {
         <div className="p-4 w-full flex flex-col items-center justify-center">
             <h1 className="w-full text-xl font-bold mb-4">Review Page</h1>
             <Tabs defaultActiveKey="1" items={items} title='Review Page' />
-            <div className='my-6 flex flex-col items-center justify-center'>
-                <FaCircleCheck fill='#52D49E' size={50} className='hover:scale-125 transition-all ease-in-out duration-150 cursor-pointer' />
+            <div className='my-6 flex flex-col items-center justify-center gap-1'>
+                <button onClick={handleCastVote}>
+                    <FaCircleCheck fill='#52D49E' size={50} className='hover:scale-125 transition-all ease-in-out duration-150 cursor-pointer' />
+                </button>
                 <div>
                     <p className='flex items-center gap-1'>
                         Tap the <span> <FaRegCheckCircle className='text-[#52D49E]' /> </span> to <span className='font-semibold'>Cast your votes</span>

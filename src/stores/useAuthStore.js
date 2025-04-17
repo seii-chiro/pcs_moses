@@ -6,10 +6,10 @@ export const useAuthStore = create()(
     (set) => ({
       isAuthenticated: true,
       user: {
-        role: "voter",
+        role: null,
       },
       setIsAuthenticated: (auth) => set({ isAuthenticated: auth }),
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setUser: (user) => set({ user }),
       logout: () => set({ user: null, isAuthenticated: false }),
     }),
     { name: "auth-storage" }

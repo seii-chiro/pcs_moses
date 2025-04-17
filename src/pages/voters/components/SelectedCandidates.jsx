@@ -4,6 +4,8 @@ import placeholder from '../../../assets/img_placeholder.png'
 import { Modal } from 'antd'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import useVotingStateStore from '../../../stores/useVotingStateStore'
+import { IoIosArrowDroprightCircle } from "react-icons/io";
 
 export const CandidateCard = ({ candidateImg, user }) => {
 
@@ -35,6 +37,7 @@ const SelectedCandidates = () => {
     const selectedCandidates = useCandidateStore(state => state.selectedCandidates);
     const [printModalOpen, setPrintModalOpen] = useState(false);
     const navigate = useNavigate()
+    const setFinalizedBallot = useVotingStateStore()?.setFinalizedBallot
 
     const handlePrintConfirmModalOpen = () => {
         setPrintModalOpen(true)
@@ -63,9 +66,8 @@ const SelectedCandidates = () => {
                 <button
                     onClick={handlePrintConfirmModalOpen}
                     disabled={Object.values(selectedCandidates).length < 1}
-                    className={`font-semibold border border-[#301F66] text-[#301F66] w-50 py-1.5 px-8 rounded-lg hover:text-white hover:bg-[#301F66] ease-in-out duration-200 ${Object.values(selectedCandidates).length < 1 ? "cursor-not-allowed" : "cursor-pointer"}`}
                 >
-                    Print Ballot
+                    <IoIosArrowDroprightCircle size={60} fill='#52D49E'/>
                 </button>
                 <p className='text-xs'>By clicking print, a hard copy of your ballot will be printed.</p>
             </div>
@@ -82,7 +84,10 @@ const SelectedCandidates = () => {
 
                     <div className='flex items-center justify-end gap-2'>
                         <button
-                            onClick={() => navigate("/voter/vote/review")}
+                            onClick={() => {
+                                navigate("/voter/vote/review")
+                                setFinalizedBallot(true)
+                            }}
                             className='border border-[#301F66] text-[#301F66] w-14 py-1 rounded-lg hover:text-white hover:bg-[#301F66] ease-in-out duration-200 cursor-pointer'
                         >
                             Yes

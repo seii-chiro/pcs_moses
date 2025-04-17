@@ -1,12 +1,81 @@
 import { Input } from 'antd'
 import hero from "../assets/login_hero.png"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
+import { useAuthStore } from '../stores/useAuthStore'
+import { useMutation } from '@tanstack/react-query'
+import { useTokenStore } from '../stores/useTokenStore'
+
+async function loginUser(username, password) {
+    const response = await fetch('http://localhost:8000/api/token-auth/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.detail || 'Login failed');
+
+    localStorage.setItem('token', data.token);
+    return data;
+}
+
+async function getMe(token) {
+    const response = await fetch('http://localhost:8000/api/me/', {
+        headers: {
+            Authorization: `Token ${token}`,
+        },
+    });
+    const userData = await response.json();
+    return userData;
+}
+
 
 const Login = () => {
+    const navigate = useNavigate()
+    const setToken = useTokenStore()?.setToken
+    const { setIsAuthenticated, setUser, isAuthenticated, user } = useAuthStore()
     const [userCredentials, setUserCredentials] = useState({
         username: "",
         password: ""
     })
+
+    const loginMutation = useMutation({
+        mutationKey: ['login'],
+        mutationFn: ({ username, password }) => loginUser(username, password),
+        onSuccess: async (data) => {
+            setToken(data.token)
+            const res = await getMe(data.token);
+            setUser(res);
+            setIsAuthenticated(true)
+        }
+    })
+
+    const handleLogin = () => {
+        loginMutation.mutate({
+            username: userCredentials.username,
+            password: userCredentials.password
+        });
+    };
+
+    useEffect(() => {
+        if (isAuthenticated && user?.role === "voter") {
+            navigate("/voter")
+        }
+
+
+        if (isAuthenticated && user?.role === "elecom") {
+            navigate("/elecom")
+        }
+
+
+        if (isAuthenticated && user?.role === "admin") {
+            navigate("/admin")
+        }
+    }, [user?.role, isAuthenticated, navigate])
 
     return (
         <div className='w-full h-screen flex items-center justify-center'>
@@ -39,6 +108,7 @@ const Login = () => {
 
                 <div className='flex flex-col gap-2 mt-10'>
                     <button
+                        onClick={handleLogin}
                         className='bg-[#301F66] text-white w-50 py-1.5 rounded-lg text-center'
                     >
                         Login

@@ -73,10 +73,10 @@ const Sidebar = () => {
                     })}
                 </nav>
 
-                <div className="border my-8 border-[#AC94F4]/30 w-full h-[1px]"></div>
+                <div className="border my-5 border-[#AC94F4]/30 w-full h-[1px]"></div>
 
                 <Link
-                    to="/logout"
+                    to="/"
                     className="flex items-center gap-2 font-medium px-4 py-2 rounded-r-[5px] transition hover:bg-gray-100"
                     onClick={() => setIsOpen(false)}
                 >

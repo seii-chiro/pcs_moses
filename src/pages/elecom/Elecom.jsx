@@ -1,51 +1,21 @@
-import circle from "../../assets/circle.png";
-import { TbDeviceIpadHorizontalCancel } from "react-icons/tb";
-import { PiDevicesThin } from "react-icons/pi";
-import { PiUserCircleCheckThin } from "react-icons/pi";
-
-const Card = ({ icon, title, count }) => {
-    return (
-        <div className="bg-[#635CBB] flex items-center rounded-xl p-5 w-80 gap-5 h-40 text-white shadow-md">
-            <div className="mb-2 bg-white/20 p-3 rounded-full">{icon}</div>
-            <div>
-                <div className="font-semibold text-[40px]">{count}</div>
-                <span>{title}</span>
-            </div>
-            
-        </div>
-    );
-};
+import React from 'react'
+import MapViewer from './components/MapViewer';
 
 const Elecom = () => {
+    const quezonCity = [14.676, 121.0437];
+
     return (
-        <div className="relative w-full h-full bg-[#F1F0FF] p-8">
-            <img
-                src={circle}
-                alt="Decorative Circle"
-                className="absolute top-0 left-0 w-full md:w-2xl h-auto z-0 pointer-events-none"
-            />
-            <h1 className="relative z-10 font-semibold text-xl mb-6">Dashboard</h1>
-            <div className="flex text center">
-                <div>29</div>
-                <p>Casted Ballots</p>
-            </div>
-            <div className="relative z-10 flex justify-center md:justify-end w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    <Card icon={<PiUserCircleCheckThin size={28} />} count={200} title="Registered Voters" />
-                    <Card icon={<TbDeviceIpadHorizontalCancel size={28} />} count={0} title="Cancelled Ballots" />
-                    <Card icon={<PiDevicesThin size={28} />} count={1} title="Registered Devices" />
-                    <Card icon={<PiUserCircleCheckThin size={28} />} count={2} title="Abandoned/Held Ballot" />
-                    <Card icon={<TbDeviceIpadHorizontalCancel size={28} />} count={159} title="Available Ballots" />
-                    <Card icon={<PiDevicesThin size={28} />} count={4} title="User Logged" />
-                </div>
-            </div>
-            <div className="w-full z-10 grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
-                <div className="rounded-[24px] p-5 bg-white z-10 relative">
-                    <h1 className="text-lg text-center font-semibold">Bar Chart</h1>
-                </div>
-                <div className="rounded-[24px] p-5 bg-white z-10 relative">
-                    <h1 className="text-lg text-center font-semibold">Ballot Details</h1>
-                </div>
+        <div className='p-5'>
+            <h1 className="relative z-10 font-semibold text-xl">Dashboard</h1>
+            <div className="w-full px-4 sm:px-8 py-10 flex flex-col items-center gap-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[#635CBB] text-center">
+                    Precinct Location Map
+                </h2>
+                <MapViewer center={quezonCity} />
+                <p className="text-sm sm:text-base text-center text-[#333] max-w-xl">
+                    Click the map marker to zoom into the precinct location. You can use this map to visualize polling
+                    stations, create new precincts, or verify the location of existing ones.
+                </p>
             </div>
         </div>
     )

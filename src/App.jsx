@@ -16,6 +16,10 @@ import ReviewPage from "./pages/voters/ReviewPage"
 import Success from "./pages/voters/components/Success"
 import VoteTracker from "./pages/voters/VoteTracker"
 import Position from "./pages/admin/pages/Position"
+import Profile from "./pages/admin/components/Profile"
+import Candidates from "./pages/admin/components/Candidates"
+import LocationSection from "./pages/admin/components/Location"
+import Test from "./Test"
 
 // function getDefaultRouteForRole(role) {
 //   switch (role) {
@@ -53,6 +57,18 @@ function App() {
         {
           path: 'position',
           element: <Position />
+        },
+        {
+          path: 'profile',
+          element: <Profile />,
+        },
+        {
+          path: 'candidates',
+          element: <Candidates />,
+        },
+        {
+          path: 'locations',
+          element: <LocationSection />,
         },
       ]
     },
@@ -105,6 +121,10 @@ function App() {
     {
       path: "*",
       element: <NotFoundPage />
+    },
+    {
+      path: "test",
+      element: <Test />
     }
   ])
 

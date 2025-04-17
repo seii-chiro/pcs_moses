@@ -24,9 +24,9 @@ const Card = ({ title, img, path }) => {
 const PrecinctSection = () => {
     return (
         <div className='flex gap-8 px-5 py-10 w-full flex-wrap justify-center items-center'>
-            <Card title='Positions' img={position} path='/admin/precinct/position' />
-            <Card title='Candidates' img={candidates} path='/candidates' />
-            <Card title='Locations' img={location} path='/locations' />
+            <Card title='Positions' img={position} path='/admin/position' />
+            <Card title='Candidates' img={candidates} path='/admin/candidates' />
+            <Card title='Locations' img={location} path='/admin/locations' />
             <Card title='Precincts' img={precincts} path='/precincts' />
             <Card title='Translate MoSES' img={translate} path='/translate' />
             <Card title='Printer' img={printer} path='/printer' />

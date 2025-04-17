@@ -31,8 +31,8 @@ const Precinct = () => {
 
     return (
         <div className="h-[92vh] w-full flex flex-col overflow-hidden p-5">
-            <div className='flex w-full justify-between items-center'>
-                <h1 className='text-lg font-semibold'>Manage Precinct</h1>
+            <div className='flex flex-col md:flex-row w-full justify-between items-start gap-5 md:items-center'>
+                <h1 className='text-lg font-semibold'>Precinct Manager</h1>
                 <nav className='flex gap-4'>
                     {tabs.map(({ key, label, icon }) => (
                         <li
@@ -50,12 +50,11 @@ const Precinct = () => {
                     ))}
                 </nav>
             </div>
-            <div className="flex-1 mt-5 overflow-y-auto w-full">
+            <div className="flex-1 mt-5 overflow-y-auto w-full hide-scrollbar">
                 <div className="bg-white rounded-xl min-h-full">
                     {renderTabContent()}
                 </div>
             </div>
-            
         </div>
     );
 };

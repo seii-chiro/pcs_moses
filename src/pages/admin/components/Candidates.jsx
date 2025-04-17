@@ -1,7 +1,7 @@
 import React from 'react'
 import { IoRefresh, IoAdd } from 'react-icons/io5'
 
-const Position = () => {
+const Candidates = () => {
     return (
         <div className='bg-white rounded-lg p-5 my-5'>
             <div className='flex justify-between items-center'>
@@ -19,7 +19,7 @@ const Position = () => {
                     </button>
                     <button className='bg-[#635CBb] hover:bg-[#4f47a8] items-center hover:shadow-xl shadow-md transition-all duration-300 text-white inline-flex gap-2 rounded-lg px-6 py-2'>
                         <IoAdd className='text-xl' />
-                        Add Candidate Position
+                        Add Candidates
                     </button>
                 </div>
             </div>
@@ -45,4 +45,4 @@ const Position = () => {
     )
 }
 
-export default Position
+export default Candidates

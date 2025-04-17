@@ -10,7 +10,7 @@ const AdminLayout = () => {
     return (
         <div className="flex min-h-screen bg-[#F1F0FF]">
             <Sidebar />
-            <main className='flex-grow flex-1 h-screen overflow-y-auto p-4'>
+            <main className='flex-grow flex-1 h-screen overflow-hidden p-4'>
                 <Breadcrumb url={location.pathname} />
                 <Outlet />
             </main>

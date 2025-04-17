@@ -4,7 +4,7 @@ import { NavLink } from 'react-router'
 
 const Success = () => {
     return (
-        <div className='w-full h-full flex justify-center items-center'>
+        <div className='w-full h-screen flex justify-center items-center'>
             <div className='flex flex-col items-center justify-center gap-5'>
                 <img src={hero} className='w-[25rem]' />
 

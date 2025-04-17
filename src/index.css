@@ -13,3 +13,13 @@
   display: flex;
   justify-content: space-around;
 }
+
+/* Add this CSS to your stylesheet */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for webkit browsers */
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* For Internet Explorer 10+ */
+  scrollbar-width: none;      /* For Firefox */
+}

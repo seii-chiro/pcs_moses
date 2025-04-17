@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 const useVotingStateStore = create((set) => ({
   ballotGenerated: true,
-  startedVoting: true,
+  startedVoting: false,
   finalizedBallot: false,
   pdfBallotCreatedInServer: false,
   ballotCasted: false,

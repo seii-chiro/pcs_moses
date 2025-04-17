@@ -5,6 +5,8 @@ import { IoCloseOutline } from "react-icons/io5";
 import { BsFileEarmarkPdf } from "react-icons/bs";
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { downloadVoterPDF } from '../../utils/downloadVoterPDF';
+import { downloadVoterExcel } from '../../utils/downloadVoterExcel';
+import { handlePrint } from '../../utils/PrintReport';
 
 const Input = ({ label, type = "text", value = "", onChange }) => (
     <div className="flex flex-col w-full">
@@ -48,17 +50,11 @@ const VotersSection = () => {
         setAllowProxy(voter.allow_proxy === "true"); 
     };
 
-
-    const handleVerify = () => {
-        if (selectedVoter) {
-            setSelectedVoter({ ...selectedVoter, verified: true });
-        }
-    };
-
-    const handleUnverify = () => {
-        if (selectedVoter) {
-            setSelectedVoter({ ...selectedVoter, verified: false });
-        }
+    const handleVoterChange = (field, value) => {
+        setSelectedVoter(prev => ({
+            ...prev,
+            [field]: value
+        }));
     };
 
     const filteredVoters = voters.filter(v =>
@@ -66,26 +62,31 @@ const VotersSection = () => {
     );
 
     return (
-        <div className='p-5 grid grid-cols-1 md:grid-cols-2 gap-5 overflow-y-auto'>
+        <div className='p-5 grid grid-cols-1 md:grid-cols-2 gap-5 overflow-hidden'>
             <div className='border flex flex-col justify-between border-[#AC94F4] py-2 rounded-lg'>
                 <div>
-                    <div className='p-2 flex justify-between items-center'>
+                    <div className='p-2 flex flex-col md:flex-row justify-between gap-4 md:items-center'>
                         <input
                             type="search"
                             value={search}
                             onChange={handleSearch}
-                            className='outline-none bg-gray-100 p-2 rounded-lg w-56'
+                            className='outline-none w-full bg-gray-100 p-2 rounded-lg md:w-56'
                             placeholder='Search Fullname'
                         />
-                        <div className='flex gap-2 items-center cursor-pointer' onClick={fetchVoters}>
-                            <IoMdRefresh className='text-[#635CBB] text-xl' />
+                        <div className='flex items-center gap-2'> 
+                            <div className='flex gap-2 items-center cursor-pointer' onClick={fetchVoters}>
+                                <IoMdRefresh className='text-[#635CBB] text-xl' />
+                            </div>
+                            <div>
+                                <button onClick={handlePrint} className='bg-[#635cbb]/80 text-white px-4 py-1.5 shadow-lg rounded-lg'>Summary Report</button>
+                            </div>
                         </div>
                     </div>
                     <div className="p-2 max-h-[500px] overflow-y-auto">
-                        <table className="w-full table-auto text-sm text-left">
+                        <table id="voter-table" className="w-full table-auto text-sm text-left">
                             <thead className="bg-[#F3F0FF] text-[#635CBB]">
                                 <tr>
-                                    <th className="p-2">ID</th>
+                                    <th className="p-2">Title</th>
                                     <th className="p-2">Name</th>
                                     <th className="p-2">Email</th>
                                     <th className="p-2">Member</th>
@@ -94,7 +95,7 @@ const VotersSection = () => {
                             <tbody>
                                 {filteredVoters.map((voter) => (
                                     <tr key={voter.id} onClick={() => handleSelectVoter(voter)} className="cursor-pointer hover:bg-gray-100">
-                                        <td className="p-2">{voter.id}</td>
+                                        <td className="p-2">{voter.title}</td>
                                         <td className="p-2">{voter.first_name} {voter.middle_name} {voter.surname}</td>
                                         <td className="p-2">{voter.email}</td>
                                         <td className="p-2">{voter.member}</td>
@@ -114,23 +115,22 @@ const VotersSection = () => {
                         </button>
                         <button
                             onClick={() => downloadVoterPDF(filteredVoters)}
-                            className={`bg-[#635cbb]/80 text-white p-4 shadow-lg rounded-full absolute bottom-0 left-0 transition-all duration-300 ease-out ${
+                            className={`bg-[#635cbb]/80 text-white p-4 shadow-lg hover:shadow-xl rounded-full absolute bottom-0 left-0 transition-all duration-300 ease-out ${
                                 isSharing ? '-translate-x-[70px] translate-y-[0px] opacity-100' : 'opacity-0 translate-x-0 translate-y-0 pointer-events-none'
                             }`}
                         >
                             <BsFileEarmarkPdf size={18} />
                         </button>
                         <button
-                            className={`bg-[#635cbb]/80 text-white p-4 shadow-lg rounded-full absolute bottom-0 left-0 transition-all duration-300 ease-out ${
-                                isSharing ? '-translate-x-[45px] -translate-y-[50px] opacity-100' : 'opacity-0 translate-x-0 translate-y-0 pointer-events-none'
-                            }`}
+                            onClick={() => downloadVoterExcel(filteredVoters)} 
+                            className={`bg-[#635cbb]/80 text-white p-4 shadow-lg rounded-full absolute bottom-0 left-0 transition-all duration-300 ease-out ${isSharing ? '-translate-x-[45px] -translate-y-[50px] opacity-100' : 'opacity-0 translate-x-0 translate-y-0 pointer-events-none'}`}
                         >
                             <PiMicrosoftExcelLogoFill size={18} />
                         </button>
                     </div>
                 </div>
             </div>
-            <div className='border border-[#AC94F4] px-3 py-5 rounded-lg'>
+            <div className='border border-[#AC94F4] px-3 py-5 flex flex-col justify-between rounded-lg'>
                 <div className='flex justify-between items-center'>
                     <h1 className='font-medium text-lg'>Selected Voter</h1>
                     <div className='flex items-center gap-2'>
@@ -139,7 +139,7 @@ const VotersSection = () => {
                             <input
                                 type="checkbox"
                                 checked={selectedVoter?.active ?? false}
-                                disabled
+                                onChange={() => handleVoterChange('active', !selectedVoter.active)}
                                 className="sr-only peer"
                             />
                             <div className={`w-11 h-6 bg-[#635cbb] peer-checked:bg-[#635CBB] rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all`}>
@@ -151,8 +151,8 @@ const VotersSection = () => {
                     {selectedVoter ? (
                         <div>
                             <h1 className='font-semibold text-center text-lg my-5'>Voter Information</h1>
-                            <div className='flex justify-between items-start gap-4'>
-                                <div className='flex flex-col w-56 gap-2'>
+                            <div className='flex flex-col md:flex-row w-full justify-between items-start gap-4'>
+                                <div className='flex flex-col w-full md:w-56 gap-2'>
                                     <div className='border border-[#AC94F4] bg-white p-2 w-full rounded-md'>
                                         <img
                                             src={selectedVoter?.profileImage || '/default-avatar.png'}
@@ -167,7 +167,7 @@ const VotersSection = () => {
                                             const file = e.target.files[0];
                                             if (file) {
                                                 const imageUrl = URL.createObjectURL(file);
-                                                setSelectedVoter(prev => ({ ...prev, profileImage: imageUrl }));
+                                                handleVoterChange('profileImage', imageUrl);
                                             }
                                         }}
                                         className="hidden"
@@ -177,14 +177,14 @@ const VotersSection = () => {
                                         <button className='bg-[#635cbb] text-white rounded-lg px-2 py-1 w-fit mt-2'>Change</button>
                                     </label>
                                 </div>
-                                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 w-2/3'>
-                                    <Input label='ID Number' type="number" value={selectedVoter.id} onChange={() => {}} />
-                                    <Input label='Email / Username' value={selectedVoter.email} onChange={() => {}} />
-                                    <Input label='First Name' value={selectedVoter.first_name} onChange={() => {}} />
-                                    <Input label='Middle Name' value={selectedVoter.middle_name} onChange={() => {}} />
-                                    <Input label='Last Name' value={selectedVoter.surname} onChange={() => {}} />
-                                    <Input label='Member' value={selectedVoter.member} onChange={() => {}} />
-                                    <Input label='Organization' value={selectedVoter.organization || ''} onChange={() => {}} />
+                                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 w-full md:w-2/3'>
+                                    <Input label='Title' value={selectedVoter.title} onChange={(e) => handleVoterChange('title', e.target.value)} />
+                                    <Input label='Email / Username' value={selectedVoter.email} onChange={(e) => handleVoterChange('email', e.target.value)} />
+                                    <Input label='First Name' value={selectedVoter.first_name} onChange={(e) => handleVoterChange('first_name', e.target.value)} />
+                                    <Input label='Middle Name' value={selectedVoter.middle_name} onChange={(e) => handleVoterChange('middle_name', e.target.value)} />
+                                    <Input label='Last Name' value={selectedVoter.surname} onChange={(e) => handleVoterChange('surname', e.target.value)} />
+                                    <Input label='Member' value={selectedVoter.member} onChange={(e) => handleVoterChange('member', e.target.value)} />
+                                    <Input label='Organization' value={selectedVoter.organization || ''} onChange={(e) => handleVoterChange('organization', e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -205,7 +205,7 @@ const VotersSection = () => {
                             <div className={`w-11 h-6 ${allowProxy ? 'bg-[#635CBB]' : 'bg-gray-200'} rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all`}></div>
                         </label>
                     </div>
-                    <div className='flex w-full gap-2 px-4'>
+                    <div className='flex flex-col md:flex-row w-full gap-2 mb-3 px-4'>
                         <Input label='Create' type='text' />
                         <Input label='Verified' type='text' value={selectedVoter?.verified ? 'Yes' : 'No'} onChange={() => {}} />
                     </div>
@@ -217,17 +217,11 @@ const VotersSection = () => {
                             <Input label='Status' type='text' />
                         </div>
                     )}
-                    <div className='flex justify-end p-4'>
-                    {allowProxy ? (
-                        <button onClick={handleVerify} className='bg-[#635CBB] text-white rounded-lg px-6 py-1'>
-                            Verify
-                        </button>
-                    ) : (
-                        <button onClick={handleUnverify} className='bg-[#635CBB] text-white rounded-lg px-6 py-1'>
-                            Unverify
-                        </button>
-                    )}
+                    
                 </div>
+                <div className='flex justify-end p-4'>
+                    <button className='bg-[#635cbb] text-white rounded-lg px-4 py-2'>submit</button>
+                    <button className='bg-[#635cbb] text-white rounded-lg px-4 py-2 ml-2'>Unverify</button>
                 </div>
             </div>
         </div>
