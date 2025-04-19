@@ -19,7 +19,10 @@ import Position from "./pages/admin/pages/Position"
 import Profile from "./pages/admin/components/Profile"
 import Candidates from "./pages/admin/components/Candidates"
 import LocationSection from "./pages/admin/components/Location"
+import Initialization from "./pages/elecom/pages/Initialization"
+import Settings from "./pages/elecom/pages/Settings"
 import Test from "./Test"
+import { Toaster } from 'sonner'
 
 // function getDefaultRouteForRole(role) {
 //   switch (role) {
@@ -43,7 +46,7 @@ function App() {
     },
     {
       path: "/admin",
-      // element: isAuthenticated && role === "admin" ? <AdminLayout /> : <Navigate to="/login" />
+      // element: isAuthenticated && role === "admin" ? <AdminLayout /> : <Navigate to="/login" />,
       element: isAuthenticated ? <AdminLayout /> : <Navigate to="/login" />,
       children: [
         {
@@ -80,6 +83,14 @@ function App() {
         {
           index: true,
           element: <Elecom />
+        },
+        {
+          path: 'initialization',
+          element: <Initialization />
+        },
+        {
+          path: 'settings',
+          element: <Settings />
         }
       ]
     },
@@ -130,6 +141,7 @@ function App() {
 
   return (
     <>
+      <Toaster richColors position="top-right" />
       <RouterProvider router={router} />
     </>
   )

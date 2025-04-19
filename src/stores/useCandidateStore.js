@@ -26,6 +26,7 @@ export const useCandidateStore = create()(
       },
       isSelected: (id) => !!get().selectedCandidates[String(id)],
       getSelectedCount: () => Object.keys(get().selectedCandidates).length,
+      clearSelectedCandidates: () => set({ selectedCandidates: {} }),
     }),
     {
       name: "candidate-selection", // key in localStorage

@@ -9,12 +9,14 @@ import { Button, Modal } from "antd"
 import { useAuthStore } from "../../../stores/useAuthStore";
 import { IoCloseOutline } from "react-icons/io5";
 import { AiOutlineExclamationCircle } from "react-icons/ai";
+import { useCandidateStore } from "../../../stores/useCandidateStore";
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation();
     const [openLogoutModal, setOpenLogoutModal] = useState(false)
     const logout = useAuthStore()?.logout
+    const clearSelectedCandidates = useCandidateStore()?.clearSelectedCandidates
     const navigate = useNavigate()
 
     const toggleSidebar = () => setIsOpen(!isOpen);
@@ -72,6 +74,7 @@ const Sidebar = () => {
                             type="primary"
                             onClick={() => {
                                 logout();
+                                clearSelectedCandidates()
                                 navigate("/");
                             }}
                             className="px-6"

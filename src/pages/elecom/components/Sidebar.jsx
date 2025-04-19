@@ -18,13 +18,20 @@ const Sidebar = () => {
 
     const links = [
         { name: "Dashboard", path: "/elecom", icon: <RxDashboard size={20} /> },
-        { name: "Initialization", icon: <FaSlideshare size={20} /> },
+        { name: "Initialization", path: "/elecom/initialization", icon: <FaSlideshare size={20} /> },
         { name: "Open Polls", icon: <LiaBoxOpenSolid size={20} /> },
         { name: "Close Polls", icon: <GiCardboardBoxClosed size={20} /> },
         { name: "Polls Canvassing", icon: <LuFileBox size={20} /> },
         { name: "Reports", icon: <LuFileText size={20} /> },
-        { name: "Settings", icon: <VscSettings size={20} /> },
+        { name: "Settings", path: '/elecom/settings', icon: <VscSettings size={20} /> },
     ];
+
+    const isLinkActive = (path) => {
+        if (path === "/elecom") {
+            return location.pathname === path;
+        }
+        return location.pathname.startsWith(path);
+    };
 
     return (
         <>
@@ -38,18 +45,28 @@ const Sidebar = () => {
                     <img src={moses_horinzontal} className="w-52" alt="Moses Logo" />
                     <div className="border my-8 border-[#AC94F4]/30 w-full h-[1px]"></div>
                     <nav className="space-y-2">
-                        {links.map((link, index) => (
+                    {links.map((link) => {
+                        const active = isLinkActive(link.path);
+                        return (
                             <Link
-                                key={index}
+                                key={link.path}
                                 to={link.path}
-                                className="flex items-center gap-2 font-medium px-4 py-2 focus:text-[#635CBB] hover:text-[#635CBB] rounded-r-[5px] focus:border-l-4 focus:border-[#635CBB] focus:font-semibold focus:bg-[#635CBB]/10 transition"
+                                className={`flex items-center gap-2 font-medium px-4 py-2 rounded-r-[5px] transition
+                                    ${active
+                                        ? "text-[#635CBB] border-l-4 border-[#635CBB] font-semibold bg-[#635CBB]/10"
+                                        : "hover:bg-gray-100"
+                                    }`}
                                 onClick={() => setIsOpen(false)}
+                                aria-current={active ? "page" : undefined}
                             >
-                                {link.icon}
+                                <span className={`${active ? "text-[#635CBB]" : "text-gray-700"}`}>
+                                    {link.icon}
+                                </span>
                                 <span>{link.name}</span>
                             </Link>
-                        ))}
-                    </nav>
+                        );
+                    })}
+                </nav>
                 </div>
                 <div>
                     <div className="border my-4 border-[#AC94F4]/30 w-full h-[1px]"></div>
