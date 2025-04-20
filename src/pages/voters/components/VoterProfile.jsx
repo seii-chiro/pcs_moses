@@ -1,4 +1,3 @@
-
 import { Input, Select, Modal } from 'antd'
 import React, { useEffect } from 'react'
 import { Table, Tag } from "antd"
@@ -18,8 +17,31 @@ async function getMe(token) {
     return userData;
 }
 
-const requestProxy = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/me/request-proxy/', {
+// const requestProxy = async (payload, token) => {
+//     const response = await fetch('http://localhost:8000/api/me/request-proxy/', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             Authorization: `Token ${token}`,
+//         },
+//         body: JSON.stringify(payload),
+//     });
+
+//     const data = await response.json();
+
+//     if (!response.ok) {
+//         const errorMsg =
+//             data?.detail ||
+//             data?.error ||
+//             'Failed to request proxy';
+//         throw new Error(errorMsg);
+//     }
+
+//     return data;
+// }
+
+const acceptProxyRequest = async (payload, token) => {
+    const response = await fetch('http://localhost:8000/api/me/accept-proxy/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -41,12 +63,12 @@ const requestProxy = async (payload, token) => {
     return data;
 }
 
-const acceptProxyRequest = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/me/accept-proxy/', {
-        method: 'POST',
+const updateProxyId = async ({ payload, token }) => {
+    const response = await fetch('http://localhost:8000/api/me/', {
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Token ${token}`,
+            'Authorization': `Token ${token}`
         },
         body: JSON.stringify(payload),
     });
@@ -56,8 +78,8 @@ const acceptProxyRequest = async (payload, token) => {
     if (!response.ok) {
         const errorMsg =
             data?.detail ||
-            data?.error ||
-            'Failed to request proxy';
+            data?.non_field_errors?.[0] ||
+            'Failed to send a proxy request.';
         throw new Error(errorMsg);
     }
 
@@ -110,7 +132,13 @@ const VoterProfile = ({ voters, votersLoading }) => {
 
     const [assignProxy, setAssignProxy] = useState({
         proxy_id: null,
-        reason: "",
+    })
+
+    const updateProxyIdMutation = useMutation({
+        mutationKey: ['update-proxy_id'],
+        mutationFn: ({ payload, token }) => updateProxyId({ payload, token }),
+        onSuccess: () => toast.success("Successfully sent a proxy request."),
+        onError: (error) => toast.error(error.message)
     })
 
     const acceptProxyRequestMutation = useMutation({
@@ -135,16 +163,16 @@ const VoterProfile = ({ voters, votersLoading }) => {
         }
     })
 
-    const requestProxyMutation = useMutation({
-        mutationKey: ['request-proxy-mutation'],
-        mutationFn: ({ payload, token }) => requestProxy(payload, token),
-        onSuccess: (data) => {
-            toast.success(data.message)
-        },
-        onError: (error) => {
-            toast.error(error.message)
-        }
-    })
+    // const requestProxyMutation = useMutation({
+    //     mutationKey: ['request-proxy-mutation'],
+    //     mutationFn: ({ payload, token }) => requestProxy(payload, token),
+    //     onSuccess: (data) => {
+    //         toast.success(data.message)
+    //     },
+    //     onError: (error) => {
+    //         toast.error(error.message)
+    //     }
+    // })
 
     const { data: user, refetch } = useQuery({
         queryKey: ['get-profile'],
@@ -319,7 +347,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 </div>
             </div>
 
-            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.received_proxy_requests?.some(request => request.status === "accepted") ? "pointer-events-none opacity-20" : ""}`}>
+            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || user?.received_proxy_requests?.some(request => request.status === "accepted") ? "pointer-events-none opacity-20" : ""}`}>
                 <div>
                     <h1 className='font-semibold text-2xl'>I Want to Appoint a Proxy</h1>
                 </div>
@@ -366,10 +394,10 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 <button
                     className='bg-[#301F66] text-white w-35 py-1.5 rounded-lg text-center cursor-pointer'
                     onClick={() => {
-                        requestProxyMutation.mutate({ payload: assignProxy, token })
+                        // requestProxyMutation.mutate({ payload: assignProxy, token })
+                        updateProxyIdMutation.mutate({ payload: assignProxy, token: token })
                         setAssignProxy({
-                            proxy_id: null,
-                            reason: ''
+                            proxy_id: null
                         })
                     }}
                 >
@@ -377,7 +405,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 </button>
             </div>
 
-            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy ? "pointer-events-none opacity-20" : ""}`}>
+            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null ? "pointer-events-none opacity-20" : ""}`}>
                 <div>
                     <h1 className='font-semibold text-2xl'>List of Voters Who Appointed Me as Proxy(Max: 2 Acceptable)</h1>
                 </div>

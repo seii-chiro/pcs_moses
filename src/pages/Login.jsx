@@ -42,8 +42,6 @@ async function getMe(token) {
 }
 
 const updateUserLocation = async ({ payload, token }) => {
-    console.log(token)
-    console.log(payload)
     const response = await fetch('http://localhost:8000/api/me/', {
         method: 'PATCH',
         headers: {
