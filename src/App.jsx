@@ -23,21 +23,31 @@ import Initialization from "./pages/elecom/pages/Initialization"
 import Settings from "./pages/elecom/pages/Settings"
 import Test from "./Test"
 import { Toaster } from 'sonner'
+import { useTokenStore } from "./stores/useTokenStore"
+import { useQuery } from "@tanstack/react-query"
 
-// function getDefaultRouteForRole(role) {
-//   switch (role) {
-//     case "admin":
-//       return "/admin"
-//     case "voter":
-//       return "/voter"
-//     case "elecom":
-//       return "/elecom"
-//   }
-// }
+const getVoters = async (token) => {
+  const response = await fetch('http://localhost:8000/api/voters/', {
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch Voters")
+  }
+  const userData = await response.json();
+  return userData;
+}
 
 function App() {
   const { isAuthenticated, user } = useAuthStore()
+  const token = useTokenStore()?.token
   const role = user?.role
+
+  const { data: voters, isLoading: votersLoading } = useQuery({
+    queryKey: ['get-voters'],
+    queryFn: () => getVoters(token)
+  })
 
   const router = createBrowserRouter([
     {
@@ -46,8 +56,8 @@ function App() {
     },
     {
       path: "/admin",
-      // element: isAuthenticated && role === 1 ? <AdminLayout /> : <Navigate to="/login" />,
-      element: isAuthenticated ? <AdminLayout /> : <Navigate to="/login" />,
+      element: isAuthenticated && role === 1 ? <AdminLayout /> : <Navigate to="/login" />,
+      // element: isAuthenticated ? <AdminLayout /> : <Navigate to="/login" />,
       children: [
         {
           index: true,
@@ -77,8 +87,8 @@ function App() {
     },
     {
       path: "/elecom",
-      // element: isAuthenticated && role === 2 ? <ElecomLayout /> : <Navigate to="/login" />,
-      element: isAuthenticated ? <ElecomLayout /> : <Navigate to="/login" />,
+      element: isAuthenticated && role === 2 ? <ElecomLayout /> : <Navigate to="/login" />,
+      // element: isAuthenticated ? <ElecomLayout /> : <Navigate to="/login" />,
       children: [
         {
           index: true,
@@ -108,7 +118,7 @@ function App() {
         },
         {
           path: 'profile',
-          element: <VoterProfile />
+          element: <VoterProfile voters={voters} votersLoading={votersLoading}/>
         },
         {
           path: 'vote/review',

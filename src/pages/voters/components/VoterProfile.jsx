@@ -18,20 +18,6 @@ async function getMe(token) {
     return userData;
 }
 
-const getVoters = async (token) => {
-    const response = await fetch('http://localhost:8000/api/voters/', {
-        headers: {
-            Authorization: `Token ${token}`,
-        },
-    });
-    if (!response.ok) {
-        throw new Error("Failed to fetch Voters")
-    }
-
-    const userData = await response.json();
-    return userData;
-}
-
 const requestProxy = async (payload, token) => {
     const response = await fetch('http://localhost:8000/api/me/request-proxy/', {
         method: 'POST',
@@ -101,7 +87,7 @@ const rejectProxyRequest = async (payload, token) => {
     return data;
 }
 
-const VoterProfile = () => {
+const VoterProfile = ({ voters, votersLoading }) => {
     const token = useTokenStore()?.token
     const [editProfileModalOpen, setEditProfileModalOpen] = useState(false)
     const [acceptProxyConfirm, setAcceptProxyConfirm] = useState(false)
@@ -158,11 +144,6 @@ const VoterProfile = () => {
         onError: (error) => {
             toast.error(error.message)
         }
-    })
-
-    const { data: voters, isLoading: votersLoading } = useQuery({
-        queryKey: ['get-voters'],
-        queryFn: () => getVoters(token)
     })
 
     const { data: user, refetch } = useQuery({
