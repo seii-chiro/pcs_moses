@@ -33,8 +33,7 @@ const Voter = () => {
                     {
                         !ballotCasted ? (
                             <NavLink
-                                className={`bg-[#301F66] text-white w-50 py-2 rounded-lg text-center ${ballotCasted ? "opacity-50 pointer-events-none" : ""
-                                    }`}
+                                className={`bg-[#301F66] text-white w-50 py-2 rounded-lg text-center`}
                                 to={voteLink}
                                 onClick={handleClick}
                             >
@@ -42,7 +41,7 @@ const Voter = () => {
                             </NavLink>
                         ) : (
                             <button
-                                className={`bg-[#301F66] text-white w-50 py-2 rounded-lg text-center cursor-pointer`}
+                                className={`bg-[#301F66] text-white w-50 py-2 rounded-lg text-center cursor-pointer ${ballotCasted ? "opacity-50 pointer-events-none" : ""}`}
                                 onClick={() => setopenBallotModal(true)}
                             >
                                 {voteText}
