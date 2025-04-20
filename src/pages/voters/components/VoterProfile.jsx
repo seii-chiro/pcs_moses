@@ -1,13 +1,112 @@
 
-import { Input, Select } from 'antd'
+import { Input, Select, Modal } from 'antd'
 import React, { useEffect } from 'react'
-import users from "../../../../sample_data/users.json"
 import { Table, Tag } from "antd"
-import { useAuthStore } from '../../../stores/useAuthStore'
 import { useState } from 'react'
+import EditProfileForm from './EditProfileForm'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useTokenStore } from '../../../stores/useTokenStore'
+import { toast } from 'sonner'
+
+async function getMe(token) {
+    const response = await fetch('http://localhost:8000/api/me/', {
+        headers: {
+            Authorization: `Token ${token}`,
+        },
+    });
+    const userData = await response.json();
+    return userData;
+}
+
+const getVoters = async (token) => {
+    const response = await fetch('http://localhost:8000/api/voters/', {
+        headers: {
+            Authorization: `Token ${token}`,
+        },
+    });
+    if (!response.ok) {
+        throw new Error("Failed to fetch Voters")
+    }
+
+    const userData = await response.json();
+    return userData;
+}
+
+const requestProxy = async (payload, token) => {
+    const response = await fetch('http://localhost:8000/api/me/request-proxy/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        const errorMsg =
+            data?.detail ||
+            data?.error ||
+            'Failed to request proxy';
+        throw new Error(errorMsg);
+    }
+
+    return data;
+}
+
+const acceptProxyRequest = async (payload, token) => {
+    const response = await fetch('http://localhost:8000/api/me/accept-proxy/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        const errorMsg =
+            data?.detail ||
+            data?.error ||
+            'Failed to request proxy';
+        throw new Error(errorMsg);
+    }
+
+    return data;
+}
+
+const rejectProxyRequest = async (payload, token) => {
+    const response = await fetch('http://localhost:8000/api/me/reject-proxy/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        const errorMsg =
+            data?.detail ||
+            data?.error ||
+            'Failed to request proxy';
+        throw new Error(errorMsg);
+    }
+
+    return data;
+}
 
 const VoterProfile = () => {
-    const user = useAuthStore()?.user
+    const token = useTokenStore()?.token
+    const [editProfileModalOpen, setEditProfileModalOpen] = useState(false)
+    const [acceptProxyConfirm, setAcceptProxyConfirm] = useState(false)
+    const [rejectProxyConfirm, setRejectProxyConfirm] = useState(false)
+    const [selectedRequestedId, setSelectedRequestedId] = useState(null)
     const [userDetails, setUserDetails] = useState({
         member_id: null,
         last_name: "",
@@ -16,24 +115,94 @@ const VoterProfile = () => {
         email: "",
     })
 
-    const dataSource = users?.slice(0, 2)?.map(user => {
-        const statuses = ["Pending", "Accepted", "Not Accepted"];
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-
-        return ({
-            key: user.id,
-            name: `${user?.surname}, ${user?.first_name} ${user?.middle_name}`,
-            reason: "No Reason",
-            dateAssigned: "2025-04-17",
-            action: (
-                <div className='w-full justify-center flex gap-2'>
-                    <button className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'>Accept</button>
-                    <button className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'>Unable to Accept</button>
-                </div>
-            ),
-            status: status
-        })
+    const [userCredentials, setUserCredentials] = useState({
+        username: null,
+        current_password: null,
+        new_password: null,
+        confirm_password: null,
     })
+
+    const [assignProxy, setAssignProxy] = useState({
+        proxy_id: null,
+        reason: "",
+    })
+
+    const acceptProxyRequestMutation = useMutation({
+        mutationKey: ['request-proxy-mutation'],
+        mutationFn: ({ payload, token }) => acceptProxyRequest(payload, token),
+        onSuccess: (data) => {
+            toast.success(data.message)
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
+    const rejectProxyRequestMutation = useMutation({
+        mutationKey: ['request-proxy-mutation'],
+        mutationFn: ({ payload, token }) => rejectProxyRequest(payload, token),
+        onSuccess: (data) => {
+            toast.success(data.message)
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
+    const requestProxyMutation = useMutation({
+        mutationKey: ['request-proxy-mutation'],
+        mutationFn: ({ payload, token }) => requestProxy(payload, token),
+        onSuccess: (data) => {
+            toast.success(data.message)
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
+    const { data: voters, isLoading: votersLoading } = useQuery({
+        queryKey: ['get-voters'],
+        queryFn: () => getVoters(token)
+    })
+
+    const { data: user, refetch } = useQuery({
+        queryKey: ['get-profile'],
+        queryFn: () => getMe(token),
+    })
+
+    const dataSource = user?.received_proxy_requests
+        ?.map(user => {
+            const dateOnly = new Date(user?.date_assigned).toISOString().split("T")[0];
+            return ({
+                key: user?.user_id,
+                name: `${user?.last_name ?? ""}, ${user?.first_name ?? ""} ${user?.middle_name ?? ""}`,
+                reason: user?.reason,
+                dateAssigned: dateOnly,
+                action: (
+                    <div className={`w-full justify-center flex gap-2`}>
+                        <button
+                            className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
+                            onClick={() => {
+                                setAcceptProxyConfirm(true)
+                                setSelectedRequestedId(user?.user_id)
+                            }}
+                        >
+                            Accept
+                        </button>
+                        <button
+                            className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
+                            onClick={() => {
+                                setRejectProxyConfirm(true)
+                                setSelectedRequestedId(user?.user_id)
+                            }}
+                        >
+                            Reject
+                        </button>
+                    </div>
+                ),
+                status: user?.status
+            })
+        })
 
     const columns = [
         {
@@ -63,17 +232,17 @@ const VoterProfile = () => {
             key: 'status',
             render: (status) => {
                 let color = '';
-                if (status === 'Pending') {
+                if (status === 'pending') {
                     color = 'orange';
-                } else if (status === 'Accepted') {
+                } else if (status === 'accepted') {
                     color = 'green';
-                } else if (status === 'Not Accepted') {
+                } else if (status === 'not accepted') {
                     color = 'red';
                 }
 
                 return (
                     <Tag color={color} className="px-3 py-1 font-medium">
-                        {status}
+                        {status.toUpperCase()}
                     </Tag>
                 );
             }
@@ -89,6 +258,11 @@ const VoterProfile = () => {
             middle_name: user?.middle_name,
             email: user?.email
         }))
+
+        setUserCredentials(prev => ({
+            ...prev,
+            username: user?.username
+        }))
     }, [user])
 
     return (
@@ -103,6 +277,8 @@ const VoterProfile = () => {
                         <Input
                             value={userDetails?.member_id}
                             placeholder='Enter Member ID'
+                            readOnly
+                            disabled
                         />
                     </label>
                     <label className='flex flex-col'>
@@ -111,6 +287,7 @@ const VoterProfile = () => {
                             value={userDetails?.last_name}
                             placeholder='Enter Last Name'
                             onChange={e => setUserDetails(prev => ({ ...prev, last_name: e.target.value }))}
+                            readOnly
                         />
                     </label>
                     <label className='flex flex-col'>
@@ -119,6 +296,7 @@ const VoterProfile = () => {
                             value={userDetails?.first_name}
                             placeholder='Enter First Name'
                             onChange={e => setUserDetails(prev => ({ ...prev, first_name: e.target.value }))}
+                            readOnly
                         />
                     </label>
                     <label className='flex flex-col'>
@@ -127,24 +305,40 @@ const VoterProfile = () => {
                             value={userDetails?.middle_name}
                             placeholder='Enter Middle Name'
                             onChange={e => setUserDetails(prev => ({ ...prev, middle_name: e.target.value }))}
+                            readOnly
                         />
                     </label>
                     <label className='flex flex-col'>
                         <span>Email Address</span>
                         <Input
+                            type='email'
                             value={userDetails?.email}
                             placeholder='Enter Email Address'
-                            onChange={e => setUserDetails(prev => ({ ...prev, email_name: e.target.value }))}
+                            onChange={e => setUserDetails(prev => ({ ...prev, email: e.target.value }))}
+                            readOnly
+                        />
+                    </label>
+                    <label className='flex flex-col'>
+                        <span>Allowed to have proxy?</span>
+                        <Input
+                            value={user?.allow_proxy ? "Yes" : "No"}
+                            placeholder='Enter Member ID'
+                            readOnly
+                            disabled
                         />
                     </label>
                 </div>
                 <div className='w-full flex gap-1 justify-between'>
-                    <button className='bg-[#301F66] text-white w-35 py-1.5 rounded-lg text-center cursor-pointer'>Edit Profile</button>
-                    <button className='bg-[#301F66] text-white w-20 py-1.5 rounded-lg text-center cursor-pointer'>Save</button>
+                    <button
+                        className='bg-[#301F66] text-white w-35 py-1.5 rounded-lg text-center cursor-pointer'
+                        onClick={() => setEditProfileModalOpen(true)}
+                    >
+                        Edit Profile
+                    </button>
                 </div>
             </div>
 
-            <div className='w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4'>
+            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.received_proxy_requests?.some(request => request.status === "accepted") ? "pointer-events-none opacity-20" : ""}`}>
                 <div>
                     <h1 className='font-semibold text-2xl'>I Want to Appoint a Proxy</h1>
                 </div>
@@ -152,29 +346,54 @@ const VoterProfile = () => {
                     <label className='flex flex-col'>
                         <span>Member ID</span>
                         <Select
+                            showSearch
+                            optionFilterProp='label'
+                            loading={votersLoading}
                             placeholder="--Choose a Voter--"
-                            options={users?.map(user => ({
-                                label: `${user?.surname}, ${user?.first_name} ${user?.middle_name}`,
+                            value={assignProxy?.proxy_id}
+                            options={voters?.filter(voter => voter?.id !== user?.id || voter?.al)?.map(user => ({
+                                label: `${user?.last_name ?? ""}, ${user?.first_name ?? ""} ${user?.middle_name ?? ""}`,
                                 value: user?.id
                             }))}
+                            onChange={value => {
+                                setAssignProxy(prev => ({
+                                    ...prev,
+                                    proxy_id: value
+                                }))
+                            }}
                         />
                     </label>
                     <label className='flex flex-col'>
                         <span>Reason (Optional)</span>
                         <Input
+                            value={assignProxy?.reason}
                             placeholder='Enter reason'
+                            onChange={e => setAssignProxy(prev => ({ ...prev, reason: e.target.value }))}
                         />
                     </label>
                     <label className='flex flex-col'>
                         <span>Status</span>
                         <Input
+                            disabled
+                            readOnly
                             value={"Pending"}
                             placeholder='Enter status'
                             style={{ color: 'orange', fontWeight: '500' }}
                         />
                     </label>
                 </div>
-                <button className='bg-[#301F66] text-white w-35 py-1.5 rounded-lg text-center cursor-pointer'>Assign Proxy</button>
+                <button
+                    className='bg-[#301F66] text-white w-35 py-1.5 rounded-lg text-center cursor-pointer'
+                    onClick={() => {
+                        requestProxyMutation.mutate({ payload: assignProxy, token })
+                        setAssignProxy({
+                            proxy_id: null,
+                            reason: ''
+                        })
+                    }}
+                >
+                    Assign Proxy
+                </button>
             </div>
 
             <div className='w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4'>
@@ -182,9 +401,93 @@ const VoterProfile = () => {
                     <h1 className='font-semibold text-2xl'>List of Voters Who Appointed Me as Proxy(Max: 2 Acceptable)</h1>
                 </div>
                 <div>
-                    <Table dataSource={dataSource} columns={columns} pagination={false} />
+                    <Table
+                        dataSource={dataSource}
+                        columns={columns}
+                        pagination={false}
+                        rowClassName={(record) => record.status !== 'pending' ? 'pointer-events-none opacity-50' : ''}
+                    />
                 </div>
             </div>
+
+            <Modal
+                centered
+                footer={null}
+                open={editProfileModalOpen}
+                onCancel={() => setEditProfileModalOpen(false)}
+                onClose={() => setEditProfileModalOpen(false)}
+            >
+                <EditProfileForm
+                    setUserCredentials={setUserCredentials}
+                    userCredentials={userCredentials}
+                    setUserDetails={setUserDetails}
+                    userDetails={userDetails}
+                />
+            </Modal>
+
+            <Modal
+                centered
+                footer={null}
+                open={acceptProxyConfirm}
+                onCancel={() => setAcceptProxyConfirm(false)}
+                onClose={() => setAcceptProxyConfirm(false)}
+            >
+                <div className='w-full mt-6 flex flex-col'>
+                    <h1 className='text-lg font-semibold'>Are you sure that you want to accept this request?</h1>
+                    <p>This action is irreversible.</p>
+
+                    <div className='w-full flex gap-2 justify-end mt-5'>
+                        <button
+                            className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
+                            onClick={() => {
+                                acceptProxyRequestMutation.mutate({ payload: { requester_id: selectedRequestedId }, token })
+                                setAcceptProxyConfirm(false)
+                                refetch()
+                            }}
+                        >
+                            Accept
+                        </button>
+                        <button
+                            onClick={() => setAcceptProxyConfirm(false)}
+                            className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal
+                centered
+                footer={null}
+                open={rejectProxyConfirm}
+                onCancel={() => setRejectProxyConfirm(false)}
+                onClose={() => setRejectProxyConfirm(false)}
+            >
+                <div className='w-full mt-6 flex flex-col'>
+                    <h1 className='text-lg font-semibold'>Are you sure that you want to reject this request?</h1>
+                    <p>This action is irreversible.</p>
+
+                    <div className='w-full flex gap-2 justify-end mt-5'>
+                        <button
+                            className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
+                            onClick={() => {
+                                rejectProxyRequestMutation.mutate({ payload: { requester_id: selectedRequestedId }, token })
+                                setRejectProxyConfirm(false)
+                                refetch()
+                            }}
+                        >
+                            Reject
+                        </button>
+                        <button
+                            onClick={() => setRejectProxyConfirm(false)}
+                            className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     )
 }

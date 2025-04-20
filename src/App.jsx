@@ -46,7 +46,7 @@ function App() {
     },
     {
       path: "/admin",
-      // element: isAuthenticated && role === "admin" ? <AdminLayout /> : <Navigate to="/login" />,
+      // element: isAuthenticated && role === 1 ? <AdminLayout /> : <Navigate to="/login" />,
       element: isAuthenticated ? <AdminLayout /> : <Navigate to="/login" />,
       children: [
         {
@@ -77,7 +77,7 @@ function App() {
     },
     {
       path: "/elecom",
-      // element: isAuthenticated && role === "elecom" ? <ElecomLayout /> : <Navigate to="/login" />,
+      // element: isAuthenticated && role === 2 ? <ElecomLayout /> : <Navigate to="/login" />,
       element: isAuthenticated ? <ElecomLayout /> : <Navigate to="/login" />,
       children: [
         {
@@ -96,7 +96,7 @@ function App() {
     },
     {
       path: "/voter",
-      element: isAuthenticated && role === "voter" ? <VotersLayout /> : <Navigate to="/login" />,
+      element: isAuthenticated && [3, 4, 5, 6].includes(role) ? <VotersLayout /> : <Navigate to="/login" />,
       children: [
         {
           index: true,

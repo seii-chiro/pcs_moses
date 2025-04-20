@@ -130,7 +130,7 @@ const VoteTracker = () => {
             isNext: nextStepIndex === 4
         },
         {
-            baseTitle: 'Counted by the TARAS',
+            baseTitle: 'Vote Canvasing',
             state: countedByTheTARAS,
             isNext: nextStepIndex === 5
         }

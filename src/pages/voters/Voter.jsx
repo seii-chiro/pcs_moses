@@ -25,7 +25,6 @@ const Voter = () => {
         voteText = "Show My Ballot"
     }
 
-
     return (
         <div className='w-full h-full flex flex-col justify-center items-center'>
             <div className='h-screen flex flex-col items-center justify-center gap-2'>

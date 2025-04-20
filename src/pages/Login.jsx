@@ -60,7 +60,7 @@ const Login = () => {
             const res = await getMe(data.token);
             setUser(res);
             setIsAuthenticated(true)
-            toast.success(`Welcome ${res.first_name}!`)
+            res.role && toast.success(`Welcome ${res.first_name}!`)
         },
         onError: (error) => {
             console.log(error)
@@ -77,20 +77,19 @@ const Login = () => {
     };
 
     useEffect(() => {
-        if (isAuthenticated && user?.role === "voter") {
-            navigate("/voter")
+        if (!isAuthenticated) return;
+
+        if (user?.role === 1) {
+            navigate("/admin");
+        } else if (user?.role === 2) {
+            navigate("/elecom");
+        } else if ([3, 4, 5, 6].includes(user?.role)) {
+            navigate("/voter");
+        } else {
+            toast.error("No role provided for this user. Please contact your system admin.");
         }
+    }, [isAuthenticated, user?.role, navigate]);
 
-
-        if (isAuthenticated && user?.role === "elecom") {
-            navigate("/elecom")
-        }
-
-
-        if (isAuthenticated && user?.role === "admin") {
-            navigate("/admin")
-        }
-    }, [user?.role, isAuthenticated, navigate])
 
     return (
         <form className='w-full' onSubmit={handleLogin}>
