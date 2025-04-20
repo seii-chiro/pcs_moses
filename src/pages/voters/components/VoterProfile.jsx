@@ -351,8 +351,8 @@ const VoterProfile = () => {
                             loading={votersLoading}
                             placeholder="--Choose a Voter--"
                             value={assignProxy?.proxy_id}
-                            options={voters?.filter(voter => voter?.id !== user?.id || voter?.al)?.map(user => ({
-                                label: `${user?.last_name ?? ""}, ${user?.first_name ?? ""} ${user?.middle_name ?? ""}`,
+                            options={voters?.filter(voter => voter?.id !== user?.id || !voter?.allow_proxy)?.map(user => ({
+                                label: `${user?.title} ${user?.last_name ?? ""}, ${user?.first_name ?? ""} ${user?.middle_name ?? ""}`,
                                 value: user?.id
                             }))}
                             onChange={value => {

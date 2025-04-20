@@ -41,15 +41,50 @@ async function getMe(token) {
     return userData;
 }
 
+const updateUserLocation = async ({ payload, token }) => {
+    console.log(token)
+    console.log(payload)
+    const response = await fetch('http://localhost:8000/api/me/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        const errorMsg =
+            data?.detail ||
+            data?.non_field_errors?.[0] ||
+            'Failed to set user location';
+        throw new Error(errorMsg);
+    }
+
+    return data;
+}
+
 
 const Login = () => {
     const navigate = useNavigate()
     const setToken = useTokenStore()?.setToken
     const { setIsAuthenticated, setUser, isAuthenticated, user } = useAuthStore()
     const [showPassword, setShowPassword] = useState(false)
+    const [location, setLocation] = useState({ voted_latitude: null, voted_longitude: null })
     const [userCredentials, setUserCredentials] = useState({
         username: "",
         password: ""
+    })
+
+    const updateUserLocationMutation = useMutation({
+        mutationKey: ['update voter location'],
+        mutationFn: ({ payload, token }) => updateUserLocation({payload, token}),
+        onSuccess: () => {
+            toast.success("Successfully updated user's location.")
+        },
+        onError: (error) => toast.error(error.message)
     })
 
     const loginMutation = useMutation({
@@ -57,6 +92,10 @@ const Login = () => {
         mutationFn: ({ username, password }) => loginUser(username, password),
         onSuccess: async (data) => {
             setToken(data.token)
+            updateUserLocationMutation.mutate({
+                payload: location,
+                token: data.token
+            })
             const res = await getMe(data.token);
             setUser(res);
             setIsAuthenticated(true)
@@ -90,6 +129,23 @@ const Login = () => {
         }
     }, [isAuthenticated, user?.role, navigate]);
 
+    useEffect(() => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setLocation({ voted_latitude: latitude, voted_longitude: longitude });
+            },
+            (error) => {
+                console.error("Geolocation error:", error);
+                toast.error("Failed to get your location");
+            }
+        );
+    }, []);
 
     return (
         <form className='w-full' onSubmit={handleLogin}>

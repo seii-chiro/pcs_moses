@@ -24,6 +24,7 @@ const updateProfile = async ({ payload, token }) => {
             data?.detail ||
             data?.non_field_errors?.[0] ||
             data?.current_password?.[0] ||
+            data?.new_password?.[0] ||
             'Failed to Update User';
         throw new Error(errorMsg);
     }
