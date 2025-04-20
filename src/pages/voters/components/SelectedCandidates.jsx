@@ -9,8 +9,8 @@ import { IoIosArrowDroprightCircle } from "react-icons/io";
 
 export const CandidateCard = ({ candidateImg, user }) => {
 
-    const name = `${user.surname}, ${user.first_name} ${user.middle_name}`;
-    const description = user.member;
+    const name = `${user.last_name ?? ""}, ${user.first_name ?? ""} ${user.middle_name ?? ""}`;
+    // const description = user.member;
 
     return (
         <div className='cursor-pointer flex rounded-lg overflow-hidden items-center transition-colors duration-300 bg-[#635CBB]'>
@@ -27,7 +27,7 @@ export const CandidateCard = ({ candidateImg, user }) => {
             <div className='w-[3px] h-10 bg-white mx-4 ' />
             <div className={`lg:px-4 text-white}`}>
                 <h2 className='font-bold text-sm lg:text-xl text-white'>{user.title ? `${user.title} ${name}` : name}</h2>
-                <p className='text-sm text-white'>({description})</p>
+                {/* <p className='text-sm text-white'>({description})</p> */}
             </div>
         </div >
     )
@@ -67,7 +67,7 @@ const SelectedCandidates = () => {
                     onClick={handlePrintConfirmModalOpen}
                     disabled={Object.values(selectedCandidates).length < 1}
                 >
-                    <IoIosArrowDroprightCircle size={60} fill='#52D49E'/>
+                    <IoIosArrowDroprightCircle size={60} fill='#52D49E' />
                 </button>
                 <p className='text-xs'>By clicking print, a hard copy of your ballot will be printed.</p>
             </div>

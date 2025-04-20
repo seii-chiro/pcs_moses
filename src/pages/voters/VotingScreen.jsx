@@ -1,16 +1,14 @@
 import React, { useState } from 'react'
-import users from "../../../sample_data/users.json"
 import CandidateCard from './components/CandidateCard'
 import { useCandidateStore } from "../../stores/useCandidateStore"
 import { Modal } from 'antd';
 import SelectedCandidates from './components/SelectedCandidates';
 
-const VotingScreen = () => {
+const VotingScreen = ({ voters }) => {
     const [modalOpen, setModalOpen] = useState(false);
     const selectedCount = useCandidateStore(
         (state) => Object.keys(state.selectedCandidates).length
     );
-
 
     const handleNextClick = () => {
         setModalOpen(true);
@@ -29,7 +27,7 @@ const VotingScreen = () => {
                     </div>
                     <div className='w-full flex items-center justify-center rounded-lg'>
                         <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 bg-[#DBD9EB] p-2 md:p-10 lg:p-14 rounded-lg'>
-                            {users?.map((user) => (
+                            {voters?.map((user) => (
                                 <CandidateCard
                                     user={user}
                                     key={user.id}

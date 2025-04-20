@@ -13,8 +13,8 @@ const CandidateCard = ({ user, candidateImg }) => {
 
     const textColor = isSelected ? 'text-white' : 'text-black';
     const bgColor = isSelected ? 'bg-white' : 'bg-black';
-    const name = `${user.surname}, ${user.first_name} ${user.middle_name}`;
-    const description = user.member;
+    const name = `${user?.last_name ?? ""}, ${user?.first_name ?? ""} ${user?.middle_name ?? ""}`;
+    // const description = user.member;
 
     return (
         <div
@@ -35,7 +35,7 @@ const CandidateCard = ({ user, candidateImg }) => {
             <div className={`w-[3px] h-10 ${bgColor} mx-4`} />
             <div className={`px-4 ${textColor}`}>
                 <h2 className='font-bold lg:text-xl'>{user.title ? `${user.title} ${name}` : name}</h2>
-                <p className='text-sm'>({description})</p>
+                {/* <p className='text-sm'>({description})</p> */}
             </div>
         </div>
     );

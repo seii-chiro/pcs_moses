@@ -114,11 +114,11 @@ function App() {
         },
         {
           path: 'vote',
-          element: <VotingScreen />
+          element: <VotingScreen voters={voters?.filter(user => user?.role === 5 || user?.role === 6)} votersLoading={votersLoading} />
         },
         {
           path: 'profile',
-          element: <VoterProfile voters={voters} votersLoading={votersLoading}/>
+          element: <VoterProfile voters={voters} votersLoading={votersLoading} />
         },
         {
           path: 'vote/review',

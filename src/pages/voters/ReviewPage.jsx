@@ -47,7 +47,7 @@ const ReviewPage = () => {
                         <h1 className="text-lg font-bold lg:text-2xl">SELECTED CANDIDATES</h1>
                         <hr className="w-[30%] text-gray-300" />
                     </div>
-                    <div className="bg-[#DBD9EB] p-8 grid grid-cols-1 lg:grid-cols-2 gap-4 rounded-lg">
+                    <div className={`bg-[#DBD9EB] p-8 grid grid-cols-1 lg:grid-cols-2 gap-4 rounded-lg`}>
                         {Object.values(selectedCandidates).map((candidate, index) => (
                             <CandidateCard user={candidate} key={index} />
                         ))}
