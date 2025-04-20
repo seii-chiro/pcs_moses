@@ -377,7 +377,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 </button>
             </div>
 
-            <div className='w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4'>
+            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy ? "pointer-events-none opacity-20" : ""}`}>
                 <div>
                     <h1 className='font-semibold text-2xl'>List of Voters Who Appointed Me as Proxy(Max: 2 Acceptable)</h1>
                 </div>
