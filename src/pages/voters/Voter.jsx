@@ -4,8 +4,10 @@ import { NavLink } from 'react-router'
 import useVotingStateStore from '../../stores/useVotingStateStore'
 import { Modal } from 'antd'
 import Ballot from './components/Ballot'
+import { useAuthStore } from '../../stores/useAuthStore'
 
 const Voter = () => {
+    const user = useAuthStore()?.user
     const [openBallotModal, setopenBallotModal] = useState(false)
     const { setStartedVoting, startedVoting, finalizedBallot, ballotCasted } = useVotingStateStore()
 
@@ -13,15 +15,15 @@ const Voter = () => {
     let voteLink = "/voter/vote"
     let handleClick = () => setStartedVoting(true)
 
-    if (startedVoting && !finalizedBallot) {
+    if (startedVoting && !finalizedBallot && user?.vote_status?.status !== "Voted") {
         voteText = "Continue Voting"
-    } else if (startedVoting && finalizedBallot) {
+    } else if (startedVoting && finalizedBallot && user?.vote_status?.status !== "Voted") {
         voteText = "Cast Vote"
         voteLink = "/voter/vote/review"
         handleClick = () => { } // No need to call setStartedVoting again
     }
 
-    if (ballotCasted) {
+    if (ballotCasted || user?.vote_status?.status === "Voted") {
         voteText = "Show My Ballot"
     }
 
@@ -31,7 +33,7 @@ const Voter = () => {
                 <img src={hero} alt={"moses screen"} className='w-[25rem]' />
                 <div className='flex flex-col'>
                     {
-                        !ballotCasted ? (
+                        user?.vote_status?.status !== "Voted" ? (
                             <NavLink
                                 className={`bg-[#301F66] text-white w-50 py-2 rounded-lg text-center`}
                                 to={voteLink}
@@ -41,7 +43,7 @@ const Voter = () => {
                             </NavLink>
                         ) : (
                             <button
-                                className={`bg-[#301F66] text-white w-50 py-2 rounded-lg text-center cursor-pointer ${ballotCasted ? "opacity-50 pointer-events-none" : ""}`}
+                                className={`bg-[#301F66] text-white w-50 py-2 rounded-lg text-center opacity-50 pointer-events-none`}
                                 onClick={() => setopenBallotModal(true)}
                             >
                                 {voteText}

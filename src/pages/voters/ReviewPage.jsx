@@ -14,7 +14,7 @@ import { useAuthStore } from '../../stores/useAuthStore';
 import { useTokenStore } from '../../stores/useTokenStore';
 
 const castBallot = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/start-vote/', {
+    const response = await fetch('http://localhost:8000/api/vote/start-vote/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ const castBallot = async (payload, token) => {
 }
 
 async function getMyProxiedUsers(token) {
-    const response = await fetch('http://localhost:8000/api/get-my-proxied-user', {
+    const response = await fetch('http://localhost:8000/api/vote/get-my-proxied-user', {
         headers: {
             Authorization: `Token ${token}`,
         },
@@ -46,12 +46,22 @@ async function getMyProxiedUsers(token) {
     return myProxies;
 }
 
+async function getMe(token) {
+    const response = await fetch('http://localhost:8000/api/me/', {
+        headers: {
+            Authorization: `Token ${token}`,
+        },
+    });
+    const userData = await response.json();
+    return userData;
+}
+
 const ReviewPage = () => {
     const selectedCandidates = useCandidateStore(state => state.selectedCandidates);
     const { setPdfBallotCreatedInServer, setBallotCasted } = useVotingStateStore();
     const [pdfUrl, setPdfUrl] = useState(null);
     const navigate = useNavigate();
-    const user = useAuthStore()?.user
+    const { user, setUser } = useAuthStore()
     const token = useTokenStore()?.token
 
     const candidateIds = Object.keys(selectedCandidates)
@@ -63,12 +73,12 @@ const ReviewPage = () => {
         queryFn: () => getMyProxiedUsers(token)
     })
 
-    console.log(myProxiedUsers)
-
     const castBallotMutation = useMutation({
         mutationKey: ['cast-ballot'],
         mutationFn: ({ payload, token }) => castBallot(payload, token),
-        onSuccess: () => {
+        onSuccess: async () => {
+            const res = await getMe(token);
+            setUser(res);
             toast.success("Successfully casted your ballot.")
             navigate("/voter/vote/success")
         },
@@ -81,7 +91,8 @@ const ReviewPage = () => {
                 castBallotMutation.mutate({
                     payload: {
                         voter_id: proxy?.id,
-                        candidate_id: candidateIds
+                        candidate_id: candidateIds,
+                        voted_at: new Date().toISOString()
                     },
                     token
                 })
@@ -91,7 +102,8 @@ const ReviewPage = () => {
         castBallotMutation.mutate({
             payload: {
                 voter_id: user?.id,
-                candidate_id: candidateIds
+                candidate_id: candidateIds,
+                voted_at: new Date().toISOString()
             },
             token
         })

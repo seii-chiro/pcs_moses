@@ -18,7 +18,7 @@ async function getMe(token) {
 }
 
 async function getMyProxiedUsers(token) {
-    const response = await fetch('http://localhost:8000/api/get-my-proxied-user', {
+    const response = await fetch('http://localhost:8000/api/vote/get-my-proxied-user', {
         headers: {
             Authorization: `Token ${token}`,
         },
@@ -28,7 +28,7 @@ async function getMyProxiedUsers(token) {
 }
 
 const requestProxy = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/request-proxy/', {
+    const response = await fetch('http://localhost:8000/api/vote/request-proxy/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ const requestProxy = async (payload, token) => {
 }
 
 const acceptProxyRequest = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/accept-proxy-request/', {
+    const response = await fetch('http://localhost:8000/api/vote/accept-proxy-request/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ const updateProxyId = async ({ payload, token }) => {
 }
 
 const rejectProxyRequest = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/remove-proxy-assignment/', {
+    const response = await fetch('http://localhost:8000/api/vote/remove-proxy-assignment/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -149,7 +149,6 @@ const VoterProfile = ({ voters, votersLoading }) => {
         queryKey: ['get-my-proxied-users'],
         queryFn: () => getMyProxiedUsers(token)
     })
-
 
     const updateProxyIdMutation = useMutation({
         mutationKey: ['update-proxy_id'],
@@ -216,7 +215,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                             className={`bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer ${isDisabled ? "opacity-30" : ""}`}
                             onClick={() => {
                                 setAcceptProxyConfirm(true)
-                                setSelectedRequestedId(user?.user_id)
+                                setSelectedRequestedId(user?.id)
                             }}
                         >
                             Accept
@@ -226,7 +225,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                             className={`bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer ${isDisabled ? "opacity-30" : ""}`}
                             onClick={() => {
                                 setRejectProxyConfirm(true)
-                                setSelectedRequestedId(user?.user_id)
+                                setSelectedRequestedId(user?.id)
                             }}
                         >
                             Reject
@@ -282,6 +281,21 @@ const VoterProfile = ({ voters, votersLoading }) => {
             }
         },
     ];
+
+    const handleAssignProxy = async () => {
+        try {
+            await requestProxyMutation.mutateAsync({ payload: assignProxy, token })
+            await updateProxyIdMutation.mutateAsync({ payload: assignProxy, token })
+
+            refetch()
+            setAssignProxy({
+                proxy_id: null,
+                reason: ""
+            })
+        } catch (err) {
+            console.error("Something went wrong assigning proxy", err)
+        }
+    }
 
     useEffect(() => {
         setUserDetails(prev => ({
@@ -372,7 +386,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 </div>
             </div>
 
-            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || myProxiedUsers?.length !== 0 ? "pointer-events-none opacity-20" : ""}`}>
+            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || myProxiedUsers?.length !== 0 || user?.vote_status?.status ? "pointer-events-none opacity-20" : ""}`}>
                 <div>
                     <h1 className='font-semibold text-2xl'>I Want to Appoint a Proxy</h1>
                 </div>
@@ -418,21 +432,13 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 </div>
                 <button
                     className='bg-[#301F66] text-white w-35 py-1.5 rounded-lg text-center cursor-pointer'
-                    onClick={() => {
-                        requestProxyMutation.mutate({ payload: assignProxy, token })
-                        updateProxyIdMutation.mutate({ payload: assignProxy, token: token })
-                        refetch()
-                        setAssignProxy({
-                            proxy_id: null,
-                            reason: ""
-                        })
-                    }}
+                    onClick={handleAssignProxy}
                 >
                     Assign Proxy
                 </button>
             </div>
 
-            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null ? "pointer-events-none opacity-20" : ""}`}>
+            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || user?.vote_status?.status ? "pointer-events-none opacity-20" : ""}`}>
                 <div>
                     <h1 className='font-semibold text-2xl'>List of Voters Who Appointed Me as Proxy(Max: 2 Acceptable)</h1>
                 </div>
@@ -474,10 +480,17 @@ const VoterProfile = ({ voters, votersLoading }) => {
                     <div className='w-full flex gap-2 justify-end mt-5'>
                         <button
                             className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
-                            onClick={() => {
-                                acceptProxyRequestMutation.mutate({ payload: [{ id: selectedRequestedId }], token })
-                                setAcceptProxyConfirm(false)
-                                refetch()
+                            onClick={async () => {
+                                try {
+                                    await acceptProxyRequestMutation.mutateAsync({
+                                        payload: [{ id: selectedRequestedId }],
+                                        token,
+                                    })
+                                    refetch()
+                                    setAcceptProxyConfirm(false)
+                                } catch (err) {
+                                    console.error("Accept proxy failed", err)
+                                }
                             }}
                         >
                             Accept
@@ -506,11 +519,19 @@ const VoterProfile = ({ voters, votersLoading }) => {
                     <div className='w-full flex gap-2 justify-end mt-5'>
                         <button
                             className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
-                            onClick={() => {
-                                rejectProxyRequestMutation.mutate({ payload: [{ id: selectedRequestedId }], token })
-                                setRejectProxyConfirm(false)
-                                refetch()
+                            onClick={async () => {
+                                try {
+                                    await rejectProxyRequestMutation.mutateAsync({
+                                        payload: [{ id: selectedRequestedId }],
+                                        token,
+                                    })
+                                    refetch()
+                                    setRejectProxyConfirm(false)
+                                } catch (err) {
+                                    console.error("Reject proxy failed", err)
+                                }
                             }}
+
                         >
                             Reject
                         </button>
