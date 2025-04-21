@@ -75,6 +75,7 @@ const Sidebar = () => {
                             danger
                             type="primary"
                             onClick={() => {
+                                resetAllStates()
                                 logout();
                                 clearSelectedCandidates()
                                 navigate("/");
