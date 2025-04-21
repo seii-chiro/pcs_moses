@@ -179,7 +179,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
         queryFn: () => getMe(token),
     })
 
-    const dataSource = user?.received_proxy_requests
+    const dataSource = voters?.filter(voter => voter?.id === user?.proxy_id) //user?.received_proxy_requests
         ?.map(user => {
             const dateOnly = new Date(user?.date_assigned).toISOString().split("T")[0];
             return ({
@@ -360,7 +360,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                             loading={votersLoading}
                             placeholder="--Choose a Voter--"
                             value={assignProxy?.proxy_id}
-                            options={voters?.filter(voter => voter?.id !== user?.id || !voter?.allow_proxy)?.map(user => ({
+                            options={voters?.filter(voter => voter?.id !== user?.id && voter?.allow_proxy)?.map(user => ({
                                 label: `${user?.title} ${user?.last_name ?? ""}, ${user?.first_name ?? ""} ${user?.middle_name ?? ""}`,
                                 value: user?.id
                             }))}
@@ -396,6 +396,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                     onClick={() => {
                         // requestProxyMutation.mutate({ payload: assignProxy, token })
                         updateProxyIdMutation.mutate({ payload: assignProxy, token: token })
+                        refetch()
                         setAssignProxy({
                             proxy_id: null
                         })

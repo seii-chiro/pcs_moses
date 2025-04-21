@@ -10,6 +10,7 @@ import { useAuthStore } from "../../../stores/useAuthStore";
 import { IoCloseOutline } from "react-icons/io5";
 import { AiOutlineExclamationCircle } from "react-icons/ai";
 import { useCandidateStore } from "../../../stores/useCandidateStore";
+import useVotingStateStore from "../../../stores/useVotingStateStore";
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +19,7 @@ const Sidebar = () => {
     const logout = useAuthStore()?.logout
     const clearSelectedCandidates = useCandidateStore()?.clearSelectedCandidates
     const navigate = useNavigate()
+    const resetAllStates = useVotingStateStore()?.resetAllStates
 
     const toggleSidebar = () => setIsOpen(!isOpen);
 

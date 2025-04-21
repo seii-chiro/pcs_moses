@@ -8,14 +8,62 @@ import { FaCircleCheck } from 'react-icons/fa6';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router';
 import useVotingStateStore from '../../stores/useVotingStateStore';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { useAuthStore } from '../../stores/useAuthStore';
+import { useTokenStore } from '../../stores/useTokenStore';
+
+const castBallot = async (payload, token) => {
+    const response = await fetch('http://localhost:8000/api/vote/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify(payload),
+    })
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        const errorMsg =
+            data?.detail ||
+            data?.non_field_errors?.[0] ||
+            'Failed to cast your vote';
+        throw new Error(errorMsg);
+    }
+
+    return data;
+}
 
 const ReviewPage = () => {
     const selectedCandidates = useCandidateStore(state => state.selectedCandidates);
     const { setPdfBallotCreatedInServer, setBallotCasted } = useVotingStateStore();
     const [pdfUrl, setPdfUrl] = useState(null);
     const navigate = useNavigate();
+    const user = useAuthStore()?.user
+    const token = useTokenStore()?.token
+
+    const firstKey = Object.keys(selectedCandidates)
+        .filter(key => !isNaN(key))
+        .sort((a, b) => a - b)[0];
+
+
+    const castBallotMutation = useMutation({
+        mutationKey: ['cast-ballot'],
+        mutationFn: ({ payload, token }) => castBallot(payload, token),
+        onSuccess: () => toast.success("Successfully casted your ballot."),
+        onError: (error) => toast.error(error.message)
+    })
 
     const handleCastVote = () => {
+        castBallotMutation.mutate({
+            payload: {
+                voter_id: user?.id,
+                candidate_id: Number(firstKey)
+            },
+            token
+        })
         setBallotCasted(true)
         navigate("/voter/vote/success")
     }
