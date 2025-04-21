@@ -17,31 +17,41 @@ async function getMe(token) {
     return userData;
 }
 
-// const requestProxy = async (payload, token) => {
-//     const response = await fetch('http://localhost:8000/api/me/request-proxy/', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//             Authorization: `Token ${token}`,
-//         },
-//         body: JSON.stringify(payload),
-//     });
+async function getMyProxiedUsers(token) {
+    const response = await fetch('http://localhost:8000/api/get-my-proxied-user', {
+        headers: {
+            Authorization: `Token ${token}`,
+        },
+    });
+    const myProxies = await response.json();
+    return myProxies;
+}
 
-//     const data = await response.json();
+const requestProxy = async (payload, token) => {
+    const response = await fetch('http://localhost:8000/api/request-proxy/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
 
-//     if (!response.ok) {
-//         const errorMsg =
-//             data?.detail ||
-//             data?.error ||
-//             'Failed to request proxy';
-//         throw new Error(errorMsg);
-//     }
+    const data = await response.json();
 
-//     return data;
-// }
+    if (!response.ok) {
+        const errorMsg =
+            data?.detail ||
+            data?.error ||
+            'Failed to request proxy';
+        throw new Error(errorMsg);
+    }
+
+    return data;
+}
 
 const acceptProxyRequest = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/me/accept-proxy/', {
+    const response = await fetch('http://localhost:8000/api/accept-proxy-request/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -87,7 +97,7 @@ const updateProxyId = async ({ payload, token }) => {
 }
 
 const rejectProxyRequest = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/me/reject-proxy/', {
+    const response = await fetch('http://localhost:8000/api/remove-proxy-assignment/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -132,7 +142,14 @@ const VoterProfile = ({ voters, votersLoading }) => {
 
     const [assignProxy, setAssignProxy] = useState({
         proxy_id: null,
+        reason: ""
     })
+
+    const { data: myProxiedUsers } = useQuery({
+        queryKey: ['get-my-proxied-users'],
+        queryFn: () => getMyProxiedUsers(token)
+    })
+
 
     const updateProxyIdMutation = useMutation({
         mutationKey: ['update-proxy_id'],
@@ -163,34 +180,40 @@ const VoterProfile = ({ voters, votersLoading }) => {
         }
     })
 
-    // const requestProxyMutation = useMutation({
-    //     mutationKey: ['request-proxy-mutation'],
-    //     mutationFn: ({ payload, token }) => requestProxy(payload, token),
-    //     onSuccess: (data) => {
-    //         toast.success(data.message)
-    //     },
-    //     onError: (error) => {
-    //         toast.error(error.message)
-    //     }
-    // })
+    const requestProxyMutation = useMutation({
+        mutationKey: ['request-proxy-mutation'],
+        mutationFn: ({ payload, token }) => requestProxy(payload, token),
+        onSuccess: (data) => {
+            toast.success(data.message)
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
 
     const { data: user, refetch } = useQuery({
         queryKey: ['get-profile'],
         queryFn: () => getMe(token),
     })
 
-    const dataSource = voters?.filter(voter => voter?.id === user?.proxy_id) //user?.received_proxy_requests
+    const dataSource = user?.received_proxy_requests
         ?.map(user => {
-            const dateOnly = new Date(user?.date_assigned).toISOString().split("T")[0];
+            const isDisabled = myProxiedUsers?.some(req => req.id === user?.id);
+            const rawDate = user?.date_assigned;
+            const isValidDate = rawDate && !isNaN(new Date(rawDate));
+            const dateOnly = isValidDate
+                ? new Date(rawDate).toISOString().split("T")[0]
+                : "N/A";
             return ({
                 key: user?.user_id,
                 name: `${user?.last_name ?? ""}, ${user?.first_name ?? ""} ${user?.middle_name ?? ""}`,
-                reason: user?.reason,
+                reason: user?.reason ?? "N/A",
                 dateAssigned: dateOnly,
                 action: (
                     <div className={`w-full justify-center flex gap-2`}>
                         <button
-                            className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
+                            disabled={isDisabled}
+                            className={`bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer ${isDisabled ? "opacity-30" : ""}`}
                             onClick={() => {
                                 setAcceptProxyConfirm(true)
                                 setSelectedRequestedId(user?.user_id)
@@ -199,7 +222,8 @@ const VoterProfile = ({ voters, votersLoading }) => {
                             Accept
                         </button>
                         <button
-                            className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
+                            disabled={isDisabled}
+                            className={`bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer ${isDisabled ? "opacity-30" : ""}`}
                             onClick={() => {
                                 setRejectProxyConfirm(true)
                                 setSelectedRequestedId(user?.user_id)
@@ -209,7 +233,8 @@ const VoterProfile = ({ voters, votersLoading }) => {
                         </button>
                     </div>
                 ),
-                status: user?.status
+                status: isDisabled ? 'accepted' : 'pending',
+                disabled: isDisabled,
             })
         })
 
@@ -251,7 +276,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
 
                 return (
                     <Tag color={color} className="px-3 py-1 font-medium">
-                        {status.toUpperCase()}
+                        {status?.toUpperCase()}
                     </Tag>
                 );
             }
@@ -347,7 +372,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 </div>
             </div>
 
-            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || user?.received_proxy_requests?.some(request => request.status === "accepted") ? "pointer-events-none opacity-20" : ""}`}>
+            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || myProxiedUsers ? "pointer-events-none opacity-20" : ""}`}>
                 <div>
                     <h1 className='font-semibold text-2xl'>I Want to Appoint a Proxy</h1>
                 </div>
@@ -394,11 +419,12 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 <button
                     className='bg-[#301F66] text-white w-35 py-1.5 rounded-lg text-center cursor-pointer'
                     onClick={() => {
-                        // requestProxyMutation.mutate({ payload: assignProxy, token })
+                        requestProxyMutation.mutate({ payload: assignProxy, token })
                         updateProxyIdMutation.mutate({ payload: assignProxy, token: token })
                         refetch()
                         setAssignProxy({
-                            proxy_id: null
+                            proxy_id: null,
+                            reason: ""
                         })
                     }}
                 >
@@ -415,7 +441,6 @@ const VoterProfile = ({ voters, votersLoading }) => {
                         dataSource={dataSource}
                         columns={columns}
                         pagination={false}
-                        rowClassName={(record) => record.status !== 'pending' ? 'pointer-events-none opacity-50' : ''}
                     />
                 </div>
             </div>
@@ -450,7 +475,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                         <button
                             className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
                             onClick={() => {
-                                acceptProxyRequestMutation.mutate({ payload: { requester_id: selectedRequestedId }, token })
+                                acceptProxyRequestMutation.mutate({ payload: [{ id: selectedRequestedId }], token })
                                 setAcceptProxyConfirm(false)
                                 refetch()
                             }}
@@ -482,7 +507,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                         <button
                             className='bg-[#301F66] text-white px-2 py-1.5 rounded-lg text-center cursor-pointer'
                             onClick={() => {
-                                rejectProxyRequestMutation.mutate({ payload: { requester_id: selectedRequestedId }, token })
+                                rejectProxyRequestMutation.mutate({ payload: [{ id: selectedRequestedId }], token })
                                 setRejectProxyConfirm(false)
                                 refetch()
                             }}

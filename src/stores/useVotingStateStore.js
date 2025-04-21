@@ -23,7 +23,7 @@ const useVotingStateStore = create(
 
       resetAllStates: () =>
         set({
-          ballotGenerated: false,
+          ballotGenerated: true,
           startedVoting: false,
           finalizedBallot: false,
           pdfBallotCreatedInServer: false,

@@ -5,15 +5,15 @@ import { Breadcrumb } from '../general_components/Breadcrumb'
 import { useLocation } from 'react-router'
 
 const VotersLayout = () => {
-    const location = useLocation();
+    // const location = useLocation();
 
     return (
         <div className='w-full h-screen flex gap-4'>
             <Sidebar />
             <main className='flex-grow overflow-y-auto'>
-                <header className='sticky top-0 bg-white z-[1000] ml-20 mt-5 md:ml-0 md:mt-0'>
+                {/* <header className='sticky top-0 bg-white z-[1000] ml-20 mt-5 md:ml-0 md:mt-0'>
                     <Breadcrumb url={location.pathname} />
-                </header>
+                </header> */}
                 <div className='w-full'>
                     <Outlet />
                 </div>

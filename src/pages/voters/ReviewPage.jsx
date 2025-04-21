@@ -8,13 +8,13 @@ import { FaCircleCheck } from 'react-icons/fa6';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router';
 import useVotingStateStore from '../../stores/useVotingStateStore';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useTokenStore } from '../../stores/useTokenStore';
 
 const castBallot = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/vote/', {
+    const response = await fetch('http://localhost:8000/api/start-vote/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -28,12 +28,22 @@ const castBallot = async (payload, token) => {
     if (!response.ok) {
         const errorMsg =
             data?.detail ||
-            data?.non_field_errors?.[0] ||
+            data?.error ||
             'Failed to cast your vote';
         throw new Error(errorMsg);
     }
 
     return data;
+}
+
+async function getMyProxiedUsers(token) {
+    const response = await fetch('http://localhost:8000/api/get-my-proxied-user', {
+        headers: {
+            Authorization: `Token ${token}`,
+        },
+    });
+    const myProxies = await response.json();
+    return myProxies;
 }
 
 const ReviewPage = () => {
@@ -44,28 +54,48 @@ const ReviewPage = () => {
     const user = useAuthStore()?.user
     const token = useTokenStore()?.token
 
-    const firstKey = Object.keys(selectedCandidates)
-        .filter(key => !isNaN(key))
-        .sort((a, b) => a - b)[0];
+    const candidateIds = Object.keys(selectedCandidates)
+        .filter((key) => !isNaN(key))
+        .map((key) => Number(key));
 
+    const { data: myProxiedUsers } = useQuery({
+        queryKey: ['get-my-proxied-users'],
+        queryFn: () => getMyProxiedUsers(token)
+    })
+
+    console.log(myProxiedUsers)
 
     const castBallotMutation = useMutation({
         mutationKey: ['cast-ballot'],
         mutationFn: ({ payload, token }) => castBallot(payload, token),
-        onSuccess: () => toast.success("Successfully casted your ballot."),
+        onSuccess: () => {
+            toast.success("Successfully casted your ballot.")
+            navigate("/voter/vote/success")
+        },
         onError: (error) => toast.error(error.message)
     })
 
     const handleCastVote = () => {
+        if (myProxiedUsers) {
+            myProxiedUsers?.map(proxy => {
+                castBallotMutation.mutate({
+                    payload: {
+                        voter_id: proxy?.id,
+                        candidate_id: candidateIds
+                    },
+                    token
+                })
+            })
+        }
+
         castBallotMutation.mutate({
             payload: {
                 voter_id: user?.id,
-                candidate_id: Number(firstKey)
+                candidate_id: candidateIds
             },
             token
         })
         setBallotCasted(true)
-        navigate("/voter/vote/success")
     }
 
     useEffect(() => {

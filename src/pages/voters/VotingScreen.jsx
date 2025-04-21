@@ -15,7 +15,7 @@ const VotingScreen = ({ voters }) => {
     };
 
     return (
-        <div className='w-full h-full p-2 mt-52 md:mt-5 lg:mt-0'>
+        <div className='w-full h-full p-2 mt-52 md:mt-5 lg:mt-20'>
             <div className='w-full h-full flex flex-col items-center justify-center'>
                 <div className='flex h-full flex-col items-center justify-center gap-4'>
                     <div className='flex w-full justify-between items-end'>

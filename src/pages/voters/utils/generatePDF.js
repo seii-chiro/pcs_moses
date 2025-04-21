@@ -39,9 +39,9 @@ export const generatePdfFromSelectedCandidates = async () => {
   const startY = 45;
 
   const rows = Object.entries(selected).map(([position, user]) => {
-    const fullName = `${user?.title ? user.title + " " : ""}${user?.surname}, ${
-      user?.first_name
-    } ${user?.middle_name}`;
+    const fullName = `${user?.title ? user.title + " " : ""}${
+      user?.last_name ?? ""
+    }, ${user?.first_name ?? ""} ${user?.middle_name ?? ""}`;
     return [position.toUpperCase(), fullName, user?.member ?? ""];
   });
 
