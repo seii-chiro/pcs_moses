@@ -11,6 +11,7 @@ import { IoCloseOutline } from "react-icons/io5";
 import { AiOutlineExclamationCircle } from "react-icons/ai";
 import { useCandidateStore } from "../../../stores/useCandidateStore";
 import useVotingStateStore from "../../../stores/useVotingStateStore";
+import { useTokenStore } from "../../../stores/useTokenStore";
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +21,7 @@ const Sidebar = () => {
     const clearSelectedCandidates = useCandidateStore()?.clearSelectedCandidates
     const navigate = useNavigate()
     const resetAllStates = useVotingStateStore()?.resetAllStates
+    const resetToken = useTokenStore()?.resetToken
 
     const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -75,10 +77,11 @@ const Sidebar = () => {
                             danger
                             type="primary"
                             onClick={() => {
-                                resetAllStates()
+                                resetAllStates();
                                 logout();
-                                clearSelectedCandidates()
+                                clearSelectedCandidates();
                                 navigate("/");
+                                resetToken();
                             }}
                             className="px-6"
                         >

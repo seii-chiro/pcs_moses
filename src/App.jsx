@@ -45,9 +45,12 @@ function App() {
   const token = useTokenStore()?.token
   const role = user?.role
 
+  const shouldFetch = isAuthenticated
+
   const { data: voters, isLoading: votersLoading } = useQuery({
     queryKey: ['get-voters'],
-    queryFn: () => getVoters(token)
+    queryFn: () => getVoters(token),
+    enabled: shouldFetch,
   })
 
   const router = createBrowserRouter([

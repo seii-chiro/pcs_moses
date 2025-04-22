@@ -7,7 +7,7 @@ const Landing = () => {
             <div className='w-full flex flex-col items-center justify-center gap-4'>
                 <div className='w-full flex flex-col items-center'>
                     <img src={hero} className='w-96' />
-                    <div className='text-4xl font-bold'>
+                    <div className='text-2xl lg:text-4xl font-bold'>
                         <span className='text-[#301F66]'>MoSES</span> &nbsp;
                         <span className='text-[#635CBB]'>Internet Voting</span>
                     </div>
@@ -15,7 +15,7 @@ const Landing = () => {
 
                 <div className='flex flex-col items-center justify-center gap-2 mt-10'>
                     <h3 className='font-bold text-xl'>Mabuhay</h3>
-                    <pre className='font-[Poppins] text-center tracking-wider'>
+                    <pre className='font-[Poppins] text-center tracking-wider text-xs lg:text-sm'>
                         Welcome to <span className='text-[#301F66] font-bold'>MoSES</span>, a 100% Filipino-designed <br />
                         and developed election system modified to suit <br />
                         the nuances of Philippine elections.
