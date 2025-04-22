@@ -6,9 +6,10 @@ import { useTokenStore } from '../../../stores/useTokenStore';
 import { useAuthStore } from '../../../stores/useAuthStore';
 import { useCandidateStore } from '../../../stores/useCandidateStore';
 import { useNavigate } from 'react-router';
+import { BASE_URL } from '../utils/url';
 
 const updateProfile = async ({ payload, token }) => {
-    const response = await fetch('http://localhost:8000/api/me/', {
+    const response = await fetch(`${BASE_URL}/api/me/`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',

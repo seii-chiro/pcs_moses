@@ -7,9 +7,10 @@ import { useMutation } from '@tanstack/react-query'
 import { useTokenStore } from '../stores/useTokenStore'
 import { toast } from 'sonner'
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { BASE_URL } from './voters/utils/url'
 
 async function loginUser(username, password) {
-    const response = await fetch('http://localhost:8000/api/token-auth/', {
+    const response = await fetch(`${BASE_URL}/api/token-auth/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -32,7 +33,7 @@ async function loginUser(username, password) {
 }
 
 async function getMe(token) {
-    const response = await fetch('http://localhost:8000/api/me/', {
+    const response = await fetch(`${BASE_URL}/api/me/`, {
         headers: {
             Authorization: `Token ${token}`,
         },
@@ -42,7 +43,7 @@ async function getMe(token) {
 }
 
 const updateUserLocation = async ({ payload, token }) => {
-    const response = await fetch('http://localhost:8000/api/me/', {
+    const response = await fetch(`${BASE_URL}/api/me/`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -78,7 +79,7 @@ const Login = () => {
 
     const updateUserLocationMutation = useMutation({
         mutationKey: ['update voter location'],
-        mutationFn: ({ payload, token }) => updateUserLocation({payload, token}),
+        mutationFn: ({ payload, token }) => updateUserLocation({ payload, token }),
         onSuccess: () => {
             toast.success("Successfully updated user's location.")
         },

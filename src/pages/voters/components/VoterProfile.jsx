@@ -6,9 +6,10 @@ import EditProfileForm from './EditProfileForm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTokenStore } from '../../../stores/useTokenStore'
 import { toast } from 'sonner'
+import { BASE_URL } from '../utils/url'
 
 async function getMe(token) {
-    const response = await fetch('http://localhost:8000/api/me/', {
+    const response = await fetch(`${BASE_URL}/api/me/`, {
         headers: {
             Authorization: `Token ${token}`,
         },
@@ -18,7 +19,7 @@ async function getMe(token) {
 }
 
 async function getMyProxiedUsers(token) {
-    const response = await fetch('http://localhost:8000/api/vote/get-my-proxied-user', {
+    const response = await fetch(`${BASE_URL}/api/vote/get-my-proxied-user`, {
         headers: {
             Authorization: `Token ${token}`,
         },
@@ -28,7 +29,7 @@ async function getMyProxiedUsers(token) {
 }
 
 const requestProxy = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/vote/request-proxy/', {
+    const response = await fetch(`${BASE_URL}/api/vote/request-proxy/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -51,7 +52,7 @@ const requestProxy = async (payload, token) => {
 }
 
 const acceptProxyRequest = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/vote/accept-proxy-request/', {
+    const response = await fetch(`${BASE_URL}/api/vote/accept-proxy-request/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -74,7 +75,7 @@ const acceptProxyRequest = async (payload, token) => {
 }
 
 const updateProxyId = async ({ payload, token }) => {
-    const response = await fetch('http://localhost:8000/api/me/', {
+    const response = await fetch(`${BASE_URL}/api/me/`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -97,7 +98,7 @@ const updateProxyId = async ({ payload, token }) => {
 }
 
 const rejectProxyRequest = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/vote/remove-proxy-assignment/', {
+    const response = await fetch(`${BASE_URL}/api/vote/remove-proxy-assignment/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -386,7 +387,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 </div>
             </div>
 
-            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || myProxiedUsers?.length !== 0 || user?.vote_status?.status ? "pointer-events-none opacity-20" : ""}`}>
+            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || myProxiedUsers?.length !== 0 || user?.vote_status?.status === "Voted" ? "pointer-events-none opacity-20" : ""}`}>
                 <div>
                     <h1 className='font-semibold text-2xl'>I Want to Appoint a Proxy</h1>
                 </div>
@@ -438,7 +439,7 @@ const VoterProfile = ({ voters, votersLoading }) => {
                 </button>
             </div>
 
-            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || user?.vote_status?.status ? "pointer-events-none opacity-20" : ""}`}>
+            <div className={`w-[95%] bg-white rounded-md shadow-[0_0_20px_rgba(0,0,0,0.1)] p-5 flex flex-col gap-4 ${!user?.allow_proxy || user?.proxy_id !== null || user?.vote_status?.status === "Voted" ? "pointer-events-none opacity-20" : ""}`}>
                 <div>
                     <h1 className='font-semibold text-2xl'>List of Voters Who Appointed Me as Proxy(Max: 2 Acceptable)</h1>
                 </div>

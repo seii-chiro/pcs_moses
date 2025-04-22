@@ -25,9 +25,10 @@ import Test from "./Test"
 import { Toaster } from 'sonner'
 import { useTokenStore } from "./stores/useTokenStore"
 import { useQuery } from "@tanstack/react-query"
+import { BASE_URL } from "./pages/voters/utils/url"
 
 const getVoters = async (token) => {
-  const response = await fetch('http://localhost:8000/api/voters/', {
+  const response = await fetch(`${BASE_URL}/api/voters/`, {
     headers: {
       Authorization: `Token ${token}`,
     },

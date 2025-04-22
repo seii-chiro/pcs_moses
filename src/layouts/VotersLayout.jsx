@@ -1,8 +1,8 @@
 import React from 'react'
 import { Outlet } from 'react-router'
 import Sidebar from '../pages/voters/components/Sidebar'
-import { Breadcrumb } from '../general_components/Breadcrumb'
-import { useLocation } from 'react-router'
+// import { Breadcrumb } from '../general_components/Breadcrumb'
+// import { useLocation } from 'react-router'
 
 const VotersLayout = () => {
     // const location = useLocation();

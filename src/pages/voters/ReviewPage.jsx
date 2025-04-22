@@ -12,9 +12,10 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useTokenStore } from '../../stores/useTokenStore';
+import { BASE_URL } from './utils/url';
 
 const castBallot = async (payload, token) => {
-    const response = await fetch('http://localhost:8000/api/vote/start-vote/', {
+    const response = await fetch(`${BASE_URL}/api/vote/start-vote/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -37,7 +38,7 @@ const castBallot = async (payload, token) => {
 }
 
 async function getMyProxiedUsers(token) {
-    const response = await fetch('http://localhost:8000/api/vote/get-my-proxied-user', {
+    const response = await fetch(`${BASE_URL}/api/vote/get-my-proxied-user`, {
         headers: {
             Authorization: `Token ${token}`,
         },
@@ -47,7 +48,7 @@ async function getMyProxiedUsers(token) {
 }
 
 async function getMe(token) {
-    const response = await fetch('http://localhost:8000/api/me/', {
+    const response = await fetch(`${BASE_URL}/api/me/`, {
         headers: {
             Authorization: `Token ${token}`,
         },

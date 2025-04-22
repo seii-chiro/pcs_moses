@@ -5,15 +5,50 @@ import useVotingStateStore from '../../stores/useVotingStateStore'
 import { Modal } from 'antd'
 import Ballot from './components/Ballot'
 import { useAuthStore } from '../../stores/useAuthStore'
+import { useMutation } from '@tanstack/react-query'
+import { BASE_URL } from './utils/url'
+import { useTokenStore } from '../../stores/useTokenStore'
+
+const setStartVote = async (payload, token) => {
+    const response = await fetch(`${BASE_URL}/api/vote/set-started-voting/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        const errorMsg =
+            data?.detail ||
+            data?.error ||
+            'Failed to start voting';
+        throw new Error(errorMsg);
+    }
+
+    return data;
+}
 
 const Voter = () => {
     const user = useAuthStore()?.user
+    const token = useTokenStore()?.token
     const [openBallotModal, setopenBallotModal] = useState(false)
     const { setStartedVoting, startedVoting, finalizedBallot, ballotCasted } = useVotingStateStore()
 
+    const setStartVoteMutation = useMutation({
+        mutationKey: ['set-start-vote'],
+        mutationFn: () => setStartVote({ voter_id: user?.id }, token),
+        onSuccess: () => setStartedVoting(true)
+    })
+
     let voteText = "Vote"
     let voteLink = "/voter/vote"
-    let handleClick = () => setStartedVoting(true)
+    let handleClick = () => {
+        setStartVoteMutation.mutate()
+    }
 
     if (startedVoting && !finalizedBallot && user?.vote_status?.status !== "Voted") {
         voteText = "Continue Voting"
