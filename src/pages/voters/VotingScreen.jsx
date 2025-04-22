@@ -15,10 +15,10 @@ const VotingScreen = ({ voters }) => {
     };
 
     return (
-        <div className='w-full h-full p-2 mt-52 md:mt-5 lg:mt-20'>
+        <div className='w-full h-full p-2 mt-16 md:mt-5 lg:mt-20'>
             <div className='w-full h-full flex flex-col items-center justify-center'>
                 <div className='flex h-full flex-col items-center justify-center gap-4'>
-                    <div className='flex w-full justify-between items-end'>
+                    <div className='flex flex-col lg:flex-row w-full justify-between  lg:items-end'>
                         <h1 className='text-3xl font-semibold'>Candidates</h1>
                         <div className='flex flex-col p-1 items-center border-2 border-[#635CBB] rounded-lg'>
                             <p className='bg-[#635CBB] text-white px-5 rounded'>Selection Page</p>

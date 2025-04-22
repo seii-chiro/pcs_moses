@@ -25,7 +25,7 @@ const CandidateCard = ({ user, candidateImg }) => {
             <div className={`flex items-center gap-2 ${textColor}`}>
                 <img
                     src={candidateImg ?? placeholder}
-                    className='w-20 h-20'
+                    className='w-10 h-10 md:w-14 md:h-14 lg:w-20 lg:h-20'
                     alt={name}
                 />
                 <p className='font-bold lg:text-2xl'>
@@ -34,7 +34,7 @@ const CandidateCard = ({ user, candidateImg }) => {
             </div>
             <div className={`w-[3px] h-10 ${bgColor} mx-4`} />
             <div className={`px-4 ${textColor}`}>
-                <h2 className='font-bold lg:text-xl'>{user.title ? `${user.title} ${name}` : name}</h2>
+                <h2 className='font-bold text-xs lg:text-xl'>{user.title ? `${user.title} ${name}` : name}</h2>
                 {/* <p className='text-sm'>({description})</p> */}
             </div>
         </div>
