@@ -17,10 +17,10 @@ export const CandidateCard = ({ candidateImg, user }) => {
             <div className={`flex items-center gap-2 text-white`}>
                 <img
                     src={candidateImg ?? placeholder}
-                    className='w-20 h-20'
+                    className='w-10 h-10 md:w-14 md:h-14 lg:w-20 lg:h-20'
                     alt={name}
                 />
-                <p className='font-bold text-2xl'>
+                <p className='font-bold  lg:text-2xl'>
                     {String(user.id).padStart(2, '0')}
                 </p>
             </div>
@@ -69,7 +69,7 @@ const SelectedCandidates = () => {
                 >
                     <IoIosArrowDroprightCircle size={60} fill='#52D49E' />
                 </button>
-                <p className='text-xs'>By clicking print, a hard copy of your ballot will be printed.</p>
+                <p className='w-full text-center text-xs'>By clicking print, a hard copy of your ballot will be printed.</p>
             </div>
 
             <Modal
